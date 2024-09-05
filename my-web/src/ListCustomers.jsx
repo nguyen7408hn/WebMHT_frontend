@@ -51,8 +51,53 @@ const ListCustomers = () => {
     };
 
     function updateCustomers(id) {
-        navigate(`/updateCustomer/${id}`);
-    }    
+        let updatePath = "";
+        switch (tai) {
+            case "tai1h":
+                updatePath = `/updateCustomer1h/${id}`;
+                break;
+            case "tai7h":
+                updatePath = `/updateCustomer7h/${id}`;
+                break;
+            case "tai9h":
+                updatePath = `/updateCustomer9h/${id}`;
+                break;
+            default:
+                break;
+        }
+        navigate(updatePath);
+    }
+
+    const handleDelete = async (id) => {
+        let endpoint = "";
+        switch (tai) {
+            case "tai1h":
+                endpoint = `/identity/Customers1H/${id}`;
+                break;
+            case "tai7h":
+                endpoint = `/identity/Customers7H/${id}`;
+                break;
+            case "tai9h":
+                endpoint = `/identity/Customers9H/${id}`;
+                break;
+            default:
+                return;
+        }
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                setCustomers(customers.filter(customer => customer.id !== id));
+            } else {
+                console.error("Lỗi khi xoá khách hàng");
+            }
+        } catch (error) {
+            console.error("Lỗi:", error);
+        }
+    };
 
     const getTaiLabel = () => {
         switch (tai) {
@@ -96,7 +141,7 @@ const ListCustomers = () => {
                             <th>Số vé</th>
                             <th>Nơi đón</th>
                             <th>Nơi đi</th>
-                            <th>Sửa</th>
+                            <th>Sửa/Xoá</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -108,7 +153,9 @@ const ListCustomers = () => {
                                 <td>{customer.noidon}</td>
                                 <td>{customer.noidi}</td>
                                 <td>
-                                    <Button onClick={() => updateCustomers(customer.id)}>Sửa</Button>
+                                    <button className = 'btn btn-info' onClick={() => updateCustomers(customer.id)}>Sửa</button>
+                                    <button className='btn btn-danger'onClick={() => handleDelete(customer.id)}
+                                            style={{ backgroundColor: 'red', color: 'white', marginLeft: '10px' }}>Xoá</button>
                                 </td>
                             </tr>
                         ))}

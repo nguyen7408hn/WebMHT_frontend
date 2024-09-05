@@ -2,7 +2,9 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Card from './Card.jsx';
 import DataInputForm from './DataInputForm.jsx';
 import ListCustomers from './ListCustomers.jsx';
-import UpdateCustomerForm from './UpdateCustomerForm.jsx';
+import UpdateCustomerForm1H from './UpdateCustomerForm1H.jsx';
+import UpdateCustomerForm7H from './UpdateCustomerForm7H.jsx';
+import UpdateCustomerForm9H from './UpdateCustomerForm9H.jsx';
 
 function App() {
   return (
@@ -30,7 +32,9 @@ function AppContent() {
         <Routes>
           <Route path='/' element={<DataInputForm />} />
           <Route path='/customers' element={<ListCustomers />} />
-          <Route path='/updateCustomer/:id' element={<UpdateCustomerForm />} />
+          <Route path='/updateCustomer1h/:id' element={<UpdateCustomerForm1H />} />
+          <Route path='/updateCustomer7h/:id' element={<UpdateCustomerForm7H />} />
+          <Route path='/updateCustomer9h/:id' element={<UpdateCustomerForm9H />} />
         </Routes>
       </div>
     </div>
