@@ -82,7 +82,7 @@ const UpdateCustomerForm1H = () => {
   };
 
   const handleView = () => {
-    navigate('/customers');
+    navigate('/customers1H', { state: { editedId: id } });
   };
 
   useEffect(() => {

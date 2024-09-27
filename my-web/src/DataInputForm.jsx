@@ -82,9 +82,15 @@ function DataInputForm() {
   };
 
   const handleView = () => {
-    navigate('/customers');
-  }
-
+    if (formData.tai === 'tai1h') {
+        navigate('/customers1H', { state: { tai: formData.tai } });
+    } else if (formData.tai === 'tai7h') {
+        navigate('/customers7H', { state: { tai: formData.tai } });
+    } else if (formData.tai === 'tai9h') {
+        navigate('/customers9H', { state: { tai: formData.tai } });
+    }
+};
+  
   useEffect(() => {
     if (messageVisible) {
       const timer = setTimeout(() => {

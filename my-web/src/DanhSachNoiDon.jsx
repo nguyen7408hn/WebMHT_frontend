@@ -1,0 +1,110 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
+import Button from "./Button";
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+const DanhSachNoiDon = () => {
+    const [listnoidon, setNoidon] = useState([]);
+    const navigate = useNavigate(); 
+
+    useEffect(() => {
+        const fetchNoidon = async () => {
+            let endpoint = "/identity/ThuTuNoiDon";
+
+            try {
+                const response = await fetch(endpoint);
+                if (response.ok) {
+                    const data = await response.json();
+                    setNoidon(data);
+                } else {
+                    console.error("Lỗi khi lấy dữ liệu nơi đón");
+                }
+            } catch (error) {
+                console.error("Lỗi:", error);
+            }
+        };
+
+        fetchNoidon();
+    });
+
+    const handleGoToNhapThuTuNoiDon = () => {
+        navigate('/nhapnoidon'); 
+    };
+
+    const handleGoToListCustomers = () => {
+        navigate('/customers1H'); 
+    };
+
+    function updateNoidon(id) {
+        let updatePath = `/updateThuTuNoiDon/${id}`;
+        navigate(updatePath);
+    }
+
+    const handleDelete = async (id) => {
+        let endpoint = `/identity/ThuTuNoiDon/${id}`;
+        
+        try {
+            const response = await fetch(endpoint, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                setNoidon(listnoidon.filter(thutu => thutu.id !== id));
+            } else {
+                console.error("Lỗi khi xoá thứ tự");
+            }
+        } catch (error) {
+            console.error("Lỗi:", error);
+        }
+    };
+
+    
+    return (
+        <div>
+            <div style={{ marginBottom: '10px', display: 'flex', gap: '50px' }}>
+                <Button 
+                    onClick={handleGoToNhapThuTuNoiDon} 
+                    style={{ marginBottom: '10px', padding: '10px 20px', fontSize: '16px' }}
+                >
+                    Nhập thêm thứ tự
+                </Button>
+                <Button 
+                    onClick={handleGoToListCustomers} 
+                    style={{ marginBottom: '10px', padding: '10px 20px', fontSize: '16px' }}
+                >
+                    Xem danh sách khách
+                </Button>
+            </div>
+
+            <div className='container'>
+                <h2 className='text-center'>Danh sách thứ tự nơi đón</h2>
+                <table className='table table-striped table-bordered'>
+                    <thead>
+                        <tr>
+                            <th>STT</th> 
+                            <th>Nơi đón</th>
+                            <th>Số thứ tự</th>
+                            <th>Sửa/Xoá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {listnoidon.map((thutu, index) => (
+                            <tr key={thutu.id}>
+                                <td>{index + 1}</td> 
+                                <td>{thutu.noidon}</td>
+                                <td>{thutu.thutu}</td>
+                                <td>
+                                    <button className = 'btn btn-info' onClick={() => updateNoidon(thutu.id)}>Sửa</button>
+                                    <button className='btn btn-danger'onClick={() => handleDelete(thutu.id)}
+                                            style={{ backgroundColor: 'red', color: 'white', marginLeft: '10px' }}>Xoá</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+export default DanhSachNoiDon;

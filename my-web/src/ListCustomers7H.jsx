@@ -3,8 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Button from "./Button";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const ListCustomers = () => {
-    const [tai, setTai] = useState("tai1h");
+const ListCustomers7H = () => {
+    const [tai, setTai] = useState("tai7h");
     const [customers, setCustomers] = useState([]);
     const [noidonOrder, setNoidonOrder] = useState([]);
     const [maxId, setMaxId] = useState(null);
@@ -181,43 +181,15 @@ const ListCustomers = () => {
         }
     };
 
-    const handlePrint = () => {
-        // Tạo một cửa sổ mới
-        const printWindow = window.open('', '', 'height=600,width=800');
-    
-        // Tạo nội dung HTML cho cửa sổ in
-        printWindow.document.write('<html><head><title>Print</title>');
-        printWindow.document.write('<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">');
-        printWindow.document.write('</head><body >');
-        
-        // Sao chép nội dung bảng vào cửa sổ in
-        const tableHTML = document.querySelector('.container').innerHTML;
-        printWindow.document.write(tableHTML);
-        
-        printWindow.document.write('</body></html>');
-        
-        // Đảm bảo nội dung được tải trước khi gọi print
-        printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
-    };
-    
-
     return (
         <div>
             <div style={{ marginBottom: '10px' }}>
-                <div style={{ display: 'flex', gap: '100px', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', gap: '230px', marginBottom: '10px' }}>
                     <Button
                         onClick={handleGoToDataInputForm}
                         style={{ marginBottom: '10px', padding: '10px 20px', fontSize: '16px' }}
                     >
                         Nhập thêm khách
-                    </Button>
-                    <Button
-                        onClick={handlePrint}
-                        style={{ marginBottom: '10px', padding: '10px 20px', fontSize: '16px' }}
-                    >
-                        In
                     </Button>
                     <Button
                         onClick={sapxep}
@@ -291,4 +263,4 @@ const ListCustomers = () => {
     );
 };
 
-export default ListCustomers;
+export default ListCustomers7H;

@@ -4,13 +4,11 @@ import Textfield from '@atlaskit/textfield';
 import Button from "./Button";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const UpdateCustomerForm7H = () => {
+const UpdateThuTuNoiDon = () => {
   const { id } = useParams();
   const [formData, setFormData] = useState({
-    sdt: '',
-    sove: '',
     noidon: '',
-    noidi: ''
+    thutu: ''
   });
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -19,16 +17,14 @@ const UpdateCustomerForm7H = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchCustomer = async () => {
+    const fetchThuTuNoiDon = async () => {
       try {
-        const response = await fetch(`/identity/Customers7H/${id}`);
+        const response = await fetch(`/identity/ThuTuNoiDon/${id}`);
         if (response.ok) {
           const data = await response.json();
           setFormData({
-            sdt: data.sdt,
-            sove: data.sove,
             noidon: data.noidon,
-            noidi: data.noidi
+            thutu: data.thutu
           });
         } else {
           console.error("Lỗi khi lấy dữ liệu khách hàng");
@@ -40,7 +36,7 @@ const UpdateCustomerForm7H = () => {
       }
     };
 
-    fetchCustomer();
+    fetchThuTuNoiDon();
   }, [id]);
 
   const handleChange = (e) => {
@@ -53,7 +49,7 @@ const UpdateCustomerForm7H = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch(`/identity/Customers7H/${id}`, {
+      const response = await fetch(`/identity/ThuTuNoiDon/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -82,7 +78,7 @@ const UpdateCustomerForm7H = () => {
   };
 
   const handleView = () => {
-    navigate('/customers7H', { state: { editedId: id } });
+    navigate('/listthutunoidon', { state: { editedId: id } });
   };
 
   useEffect(() => {
@@ -105,27 +101,7 @@ const UpdateCustomerForm7H = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <h2>Cập nhật thông tin khách Tài 7H</h2>
-      
-      <div style={{ marginBottom: '10px' }}>
-        <Textfield
-          name="sdt"
-          placeholder="Điền số điện thoại"
-          value={formData.sdt}
-          onChange={handleChange}
-          onMouseEnter={handleMouseEnter}
-        />
-      </div>
-
-      <div style={{ marginBottom: '10px' }}>
-        <Textfield
-          name="sove"
-          placeholder="Điền số ghế"
-          value={formData.sove}
-          onChange={handleChange}
-          onMouseEnter={handleMouseEnter}
-        />
-      </div>
+      <h2>Cập nhật nơi đón và thứ tự</h2>
 
       <div style={{ marginBottom: '10px' }}>
         <Textfield
@@ -139,9 +115,9 @@ const UpdateCustomerForm7H = () => {
 
       <div style={{ marginBottom: '10px' }}>
         <Textfield
-          name="noidi"
+          name="thutu"
           placeholder="Điền nơi đi"
-          value={formData.noidi}
+          value={formData.thutu}
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
         />
@@ -166,4 +142,4 @@ const UpdateCustomerForm7H = () => {
   );
 };
 
-export default UpdateCustomerForm7H;
+export default UpdateThuTuNoiDon;
