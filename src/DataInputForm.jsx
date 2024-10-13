@@ -19,22 +19,25 @@ function DataInputForm() {
   const [errorMessage, setErrorMessage] = useState('');
   const [messageVisible, setMessageVisible] = useState(true); 
   const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false); 
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    if (formData.noiDon.length >= 1) { // Khi người dùng nhập từ 1 ký tự trở lên
+    if (formData.noiDon.length >= 1) {
       axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${formData.noiDon}`)
         .then((response) => {
           console.log("Dữ liệu phản hồi từ API:", response.data);
-          setSuggestions(response.data); // Cập nhật danh sách gợi ý
+          setSuggestions(response.data);
+          setShowSuggestions(true);
         })
         .catch((error) => {
           console.error('Lỗi khi lấy gợi ý:', error);
         });
     } else {
-      setSuggestions([]); // Xoá gợi ý nếu chuỗi quá ngắn
+      setSuggestions([]);
+      setShowSuggestions(false);
     }
   }, [formData.noiDon, API_URL]);
 
@@ -50,13 +53,13 @@ function DataInputForm() {
     navigate(`/customers`, { state: { tai: formData.tai } });
   };
 
-  // Hàm chọn gợi ý
   const handleSuggestionClick = (suggestion) => {
     setFormData({
       ...formData,
       noiDon: suggestion
     });
-    setSuggestions([]); // Xoá gợi ý ngay khi chọn
+    setSuggestions([]);
+    setShowSuggestions(false);
   };
 
   const handleSubmit = async () => {
@@ -89,6 +92,19 @@ function DataInputForm() {
       setSuccessMessage('Gửi dữ liệu thành công');
       setErrorMessage('');
       setMessageVisible(true);
+
+      // Reset form data
+      setFormData({
+        id: '',
+        tai: 'tai1h',
+        soDT: '',
+        soGhe: '',
+        noiDon: '',
+        noiDi: ''
+      });
+      
+      setSuggestions([]);
+      setShowSuggestions(false);
     } catch (error) {
       console.error('Có lỗi xảy ra trong quá trình gửi dữ liệu:', error);
       setSuccessMessage('');
@@ -96,7 +112,7 @@ function DataInputForm() {
       setMessageVisible(true);
     }
   };
-  
+
   useEffect(() => {
     if (messageVisible) {
       const timer = setTimeout(() => {
@@ -109,6 +125,16 @@ function DataInputForm() {
 
   const handleMouseEnter = () => {
     setMessageVisible(false);
+  };
+
+  const handleFocusNoiDon = () => {
+    if (formData.noiDon.length >= 1) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleFocusOther = () => {
+    setShowSuggestions(false); // Ẩn gợi ý khi focus vào ô khác
   };
 
   return (
@@ -129,6 +155,7 @@ function DataInputForm() {
           value={formData.soDT}
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
+          onFocus={handleFocusOther} // Thêm sự kiện focus
         />
       </div>
 
@@ -139,6 +166,7 @@ function DataInputForm() {
           value={formData.soGhe}
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
+          onFocus={handleFocusOther} // Thêm sự kiện focus
         />
       </div>
 
@@ -149,10 +177,10 @@ function DataInputForm() {
           value={formData.noiDon}
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
+          onFocus={handleFocusNoiDon} // Thêm sự kiện focus
           autoComplete="off"
         />
-        {/* Danh sách gợi ý tùy chỉnh */}
-        {suggestions.length > 0 && !suggestions.some(s => s.noidon === formData.noiDon) && ( // Chỉ hiển thị nếu không có gợi ý trùng
+        {showSuggestions && suggestions.length > 0 && !suggestions.some(s => s.noidon === formData.noiDon) && (
           <ul style={{ 
               border: '1px solid #ccc', 
               padding: '0', 
@@ -160,7 +188,7 @@ function DataInputForm() {
               position: 'absolute', 
               zIndex: '1000', 
               backgroundColor: 'white', 
-              listStyleType: 'none' // Đảm bảo không có dấu chấm
+              listStyleType: 'none'
             }}>
             {suggestions.map((suggestion, index) => (
               <li key={index} onClick={() => handleSuggestionClick(suggestion.noidon)} style={{ padding: '8px', cursor: 'pointer' }}>
@@ -178,6 +206,7 @@ function DataInputForm() {
           value={formData.noiDi}
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
+          onFocus={handleFocusOther} // Thêm sự kiện focus
         />
       </div>
 
