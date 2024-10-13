@@ -8,7 +8,7 @@ import axios from 'axios';
 function DataInputForm() {
   const [formData, setFormData] = useState({
     id: '',
-    tai: 'tai1h',
+    tai: 'tai1h', // Giữ nguyên giá trị mặc định
     soDT: '',
     soGhe: '',
     noiDon: '',
@@ -26,10 +26,21 @@ function DataInputForm() {
 
   useEffect(() => {
     if (formData.noiDon.length >= 1) {
-      axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${formData.noiDon}`)
-        .then((response) => {
-          console.log("Dữ liệu phản hồi từ API:", response.data);
-          setSuggestions(response.data);
+      const queryParam = formData.noiDon;
+
+      // Gửi yêu cầu API cho cả 'd' và 'đ'
+      const promises = [
+        axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam}`),
+        axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam.replace(/d/g, 'đ')}`)
+      ];
+
+      Promise.all(promises)
+        .then((responses) => {
+          const allSuggestions = [...responses[0].data, ...responses[1].data];
+          const uniqueSuggestions = Array.from(new Set(allSuggestions.map(s => s.noidon)))
+            .map(id => allSuggestions.find(s => s.noidon === id));
+
+          setSuggestions(uniqueSuggestions);
           setShowSuggestions(true);
         })
         .catch((error) => {
@@ -46,11 +57,6 @@ function DataInputForm() {
       ...formData,
       [e.target.name]: e.target.value
     });
-  };
-
-  const handleView = () => {
-    console.log("Giá trị tai hiện tại:", formData.tai);
-    navigate(`/customers`, { state: { tai: formData.tai } });
   };
 
   const handleSuggestionClick = (suggestion) => {
@@ -93,14 +99,15 @@ function DataInputForm() {
       setErrorMessage('');
       setMessageVisible(true);
 
-      // Reset form data
-      setFormData({
+      // Reset form data nhưng giữ lại tài
+      setFormData((prevData) => ({
+        ...prevData,
         id: '',
         soDT: '',
         soGhe: '',
         noiDon: '',
         noiDi: ''
-      });
+      }));
       
       setSuggestions([]);
       setShowSuggestions(false);
@@ -110,6 +117,11 @@ function DataInputForm() {
       setErrorMessage('Có lỗi xảy ra trong quá trình gửi dữ liệu');
       setMessageVisible(true);
     }
+  };
+
+  const handleView = () => {
+    console.log("Giá trị tai hiện tại:", formData.tai);
+    navigate(`/customers`, { state: { tai: formData.tai } });
   };
 
   useEffect(() => {
@@ -179,7 +191,7 @@ function DataInputForm() {
           onFocus={handleFocusNoiDon} // Thêm sự kiện focus
           autoComplete="off"
         />
-        {showSuggestions && suggestions.length > 0 && !suggestions.some(s => s.noidon === formData.noiDon) && (
+        {showSuggestions && suggestions.length > 0 && (
           <ul style={{ 
               border: '1px solid #ccc', 
               padding: '0', 
