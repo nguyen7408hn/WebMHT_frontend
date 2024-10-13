@@ -32,7 +32,7 @@ function DataInputForm() {
 
         const promises = [
             axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam}`),
-            axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam.replace(/d/g, 'đ')}`)
+            axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam.replace(/d/g, 'đ').replace(/D/g, 'Đ')}`)
         ];
 
         Promise.all(promises)
@@ -47,6 +47,9 @@ function DataInputForm() {
             .catch((error) => {
                 console.error('Lỗi khi lấy gợi ý:', error);
             });
+
+        // Cập nhật lastNoiDon
+        setLastNoiDon(formData.noiDon);
     } else {
         setSuggestions([]);
         setShowSuggestions(false);
