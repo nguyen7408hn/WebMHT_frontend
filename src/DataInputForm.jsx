@@ -20,52 +20,63 @@ function DataInputForm() {
   const [messageVisible, setMessageVisible] = useState(true); 
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false); 
+  const [submittedData, setSubmittedData] = useState(null); // Trạng thái mới để lưu thông tin đã gửi
+  const [lastNoiDon, setLastNoiDon] = useState('');
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    if (formData.noiDon.length >= 1) {
-      const queryParam = formData.noiDon;
+    if (formData.noiDon.length >= 1 && formData.noiDon !== lastNoiDon) {
+        const queryParam = formData.noiDon;
 
-      // Gửi yêu cầu API cho cả 'd' và 'đ'
-      const promises = [
-        axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam}`),
-        axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam.replace(/d/g, 'đ')}`)
-      ];
+        const promises = [
+            axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam}`),
+            axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam.replace(/d/g, 'đ')}`)
+        ];
 
-      Promise.all(promises)
-        .then((responses) => {
-          const allSuggestions = [...responses[0].data, ...responses[1].data];
-          const uniqueSuggestions = Array.from(new Set(allSuggestions.map(s => s.noidon)))
-            .map(id => allSuggestions.find(s => s.noidon === id));
+        Promise.all(promises)
+            .then((responses) => {
+                const allSuggestions = [...responses[0].data, ...responses[1].data];
+                const uniqueSuggestions = Array.from(new Set(allSuggestions.map(s => s.noidon)))
+                    .map(id => allSuggestions.find(s => s.noidon === id));
 
-          setSuggestions(uniqueSuggestions);
-          setShowSuggestions(true);
-        })
-        .catch((error) => {
-          console.error('Lỗi khi lấy gợi ý:', error);
-        });
+                setSuggestions(uniqueSuggestions);
+                setShowSuggestions(true);
+            })
+            .catch((error) => {
+                console.error('Lỗi khi lấy gợi ý:', error);
+            });
     } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
+        setSuggestions([]);
+        setShowSuggestions(false);
     }
-  }, [formData.noiDon, API_URL]);
+}, [formData.noiDon, API_URL, lastNoiDon]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+
+    setFormData(prevData => ({
+        ...prevData,
+        [name]: value
+    }));
+
+    // Chỉ hiển thị gợi ý nếu noiDon thực sự thay đổi
+    if (name === 'noiDon' && value.length >= 1) {
+        setShowSuggestions(true);
+    } else {
+        setShowSuggestions(false);
+    }
   };
 
   const handleSuggestionClick = (suggestion) => {
-    setFormData({
-      ...formData,
-      noiDon: suggestion
-    });
-    setSuggestions([]);
-    setShowSuggestions(false);
+    setFormData((prevData) => ({
+        ...prevData,
+        noiDon: suggestion
+    }));
+    setLastNoiDon(suggestion); // Cập nhật lastNoiDon
+    setSuggestions([]); // Xoá gợi ý ngay khi chọn
+    setShowSuggestions(false); // Ẩn bảng gợi ý
   };
 
   const handleSubmit = async () => {
@@ -98,6 +109,9 @@ function DataInputForm() {
       setSuccessMessage('Gửi dữ liệu thành công');
       setErrorMessage('');
       setMessageVisible(true);
+
+      // Cập nhật thông tin đã gửi
+      setSubmittedData(formData);
 
       // Reset form data nhưng giữ lại tài
       setFormData((prevData) => ({
@@ -234,6 +248,17 @@ function DataInputForm() {
       {errorMessage && messageVisible && (
         <div style={{ color: 'red', marginTop: '10px' }}>
           {errorMessage}
+        </div>
+      )}
+
+      {submittedData && (
+        <div style={{ marginTop: '20px' }}>
+          <h5>Thông tin đã gửi:</h5>
+          <p><strong>Tài:</strong> {submittedData.tai === 'tai1h' ? 'Tài 1H' : submittedData.tai === 'tai7h' ? 'Tài 7H' : 'Tài 9H'}</p>
+          <p><strong>Số điện thoại:</strong> {submittedData.soDT}</p>
+          <p><strong>Số ghế:</strong> {submittedData.soGhe}</p>
+          <p><strong>Nơi đón:</strong> {submittedData.noiDon}</p>
+          <p><strong>Nơi đi:</strong> {submittedData.noiDi}</p>
         </div>
       )}
     </div>
