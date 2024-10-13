@@ -16,7 +16,7 @@ function NhapThuTuNoiDon() {
     const [messageVisible, setMessageVisible] = useState(true); 
 
     const navigate = useNavigate();
-
+    const API_URL = import.meta.env.VITE_API_URL;
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -44,7 +44,7 @@ function NhapThuTuNoiDon() {
     };
 
     const handleSubmit = async () => {
-        let endpoint = '/identity/ThuTuNoiDon';
+        let endpoint = `${API_URL}/identity/ThuTuNoiDon`;
     
         try {
           const response = await fetch(endpoint, {

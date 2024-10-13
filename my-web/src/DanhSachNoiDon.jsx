@@ -6,10 +6,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const DanhSachNoiDon = () => {
     const [listnoidon, setNoidon] = useState([]);
     const navigate = useNavigate(); 
+    const API_URL = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
         const fetchNoidon = async () => {
-            let endpoint = "/identity/ThuTuNoiDon";
+            let endpoint = `${API_URL}/identity/ThuTuNoiDon`;
 
             try {
                 const response = await fetch(endpoint);
@@ -32,7 +33,7 @@ const DanhSachNoiDon = () => {
     };
 
     const handleGoToListCustomers = () => {
-        navigate('/customers1H'); 
+        navigate('/customers'); 
     };
 
     function updateNoidon(id) {
@@ -41,7 +42,7 @@ const DanhSachNoiDon = () => {
     }
 
     const handleDelete = async (id) => {
-        let endpoint = `/identity/ThuTuNoiDon/${id}`;
+        let endpoint = `${API_URL}/identity/ThuTuNoiDon/${id}`;
         
         try {
             const response = await fetch(endpoint, {
@@ -88,17 +89,20 @@ const DanhSachNoiDon = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {listnoidon.map((thutu, index) => (
-                            <tr key={thutu.id}>
-                                <td>{index + 1}</td> 
-                                <td>{thutu.noidon}</td>
-                                <td>{thutu.thutu}</td>
-                                <td>
-                                    <button className = 'btn btn-info' onClick={() => updateNoidon(thutu.id)}>Sửa</button>
-                                    <button className='btn btn-danger'onClick={() => handleDelete(thutu.id)}
-                                            style={{ backgroundColor: 'red', color: 'white', marginLeft: '10px' }}>Xoá</button>
-                                </td>
-                            </tr>
+                        {listnoidon
+                            .slice() // Tạo một bản sao của mảng để không thay đổi mảng gốc
+                            .sort((a, b) => a.thutu - b.thutu) // Sắp xếp theo thutu
+                            .map((thutu) => (
+                                <tr key={thutu.id}>
+                                    <td>{thutu.thutu}</td> {/* STT hiển thị giá trị thutu */}
+                                    <td>{thutu.noidon}</td>
+                                    <td>{thutu.thutu}</td>  {/* Số thứ tự từ dữ liệu */}
+                                    <td>
+                                        <button className = 'btn btn-info' onClick={() => updateNoidon(thutu.id)}>Sửa</button>
+                                        <button className='btn btn-danger'onClick={() => handleDelete(thutu.id)}
+                                                style={{ backgroundColor: 'red', color: 'white', marginLeft: '10px' }}>Xoá</button>
+                                    </td>
+                                </tr>
                         ))}
                     </tbody>
                 </table>

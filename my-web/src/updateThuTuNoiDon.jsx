@@ -15,11 +15,11 @@ const UpdateThuTuNoiDon = () => {
   const [messageVisible, setMessageVisible] = useState(true); 
   const [loading, setLoading] = useState(true); 
   const navigate = useNavigate();
-
+  const API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
     const fetchThuTuNoiDon = async () => {
       try {
-        const response = await fetch(`/identity/ThuTuNoiDon/${id}`);
+        const response = await fetch(`${API_URL}/identity/ThuTuNoiDon/${id}`);
         if (response.ok) {
           const data = await response.json();
           setFormData({
@@ -37,7 +37,7 @@ const UpdateThuTuNoiDon = () => {
     };
 
     fetchThuTuNoiDon();
-  }, [id]);
+  }, [id, API_URL]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,7 +49,7 @@ const UpdateThuTuNoiDon = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch(`/identity/ThuTuNoiDon/${id}`, {
+      const response = await fetch(`${API_URL}/identity/ThuTuNoiDon/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'

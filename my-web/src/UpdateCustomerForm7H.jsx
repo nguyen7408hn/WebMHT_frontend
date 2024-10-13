@@ -17,11 +17,11 @@ const UpdateCustomerForm7H = () => {
   const [messageVisible, setMessageVisible] = useState(true); 
   const [loading, setLoading] = useState(true); 
   const navigate = useNavigate();
-
+  const API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
     const fetchCustomer = async () => {
       try {
-        const response = await fetch(`/identity/Customers7H/${id}`);
+        const response = await fetch(`${API_URL}/identity/Customers7H/${id}`);
         if (response.ok) {
           const data = await response.json();
           setFormData({
@@ -41,7 +41,7 @@ const UpdateCustomerForm7H = () => {
     };
 
     fetchCustomer();
-  }, [id]);
+  }, [id, API_URL]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,7 +53,7 @@ const UpdateCustomerForm7H = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch(`/identity/Customers7H/${id}`, {
+      const response = await fetch(`${API_URL}/identity/Customers7H/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -82,7 +82,7 @@ const UpdateCustomerForm7H = () => {
   };
 
   const handleView = () => {
-    navigate('/customers7H', { state: { editedId: id } });
+    navigate(`/customers`, { state: { tai: "tai7h" } });
   };
 
   useEffect(() => {

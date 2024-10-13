@@ -4,27 +4,20 @@ import Button from "./Button";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const ListCustomers = () => {
-    const [tai, setTai] = useState("tai1h");
+    const location = useLocation();
+    const [tai, setTai] = useState(location.state?.tai || "tai1h");
     const [customers, setCustomers] = useState([]);
     const [noidonOrder, setNoidonOrder] = useState([]);
     const [maxId, setMaxId] = useState(null);
-    const [editedId, setEditedId] = useState(null);
     const [loading, setLoading] = useState(false); // Loading state
     const [error, setError] = useState(null); // Error state
     const navigate = useNavigate();
-    const location = useLocation();
-
+    const API_URL = import.meta.env.VITE_API_URL;
     useEffect(() => {
-        // Cập nhật tai và editedId từ location.state khi có giá trị
-        if (location.state) {
-            if (location.state.editedId) {
-                setEditedId(location.state.editedId);
-            }
-            if (location.state.tai) {
-                setTai(location.state.tai);
-            }
+        if (location.state?.tai) {
+          setTai(location.state.tai); // Cập nhật giá trị `tai` dựa trên chuyển hướng
         }
-    }, [location.state]);
+      }, [location.state]);
 
     useEffect(() => {
         // Fetch dữ liệu thứ tự nơi đón
@@ -32,7 +25,7 @@ const ListCustomers = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch("/identity/ThuTuNoiDon", {
+                const response = await fetch(`${API_URL}/identity/ThuTuNoiDon`, {
                     method: 'GET'
                 });
                 if (response.ok) {
@@ -49,7 +42,7 @@ const ListCustomers = () => {
         };
 
         fetchNoidonOrder();
-    }, []);
+    }, [API_URL]);
 
     useEffect(() => {
         const fetchCustomers = async () => {
@@ -58,13 +51,13 @@ const ListCustomers = () => {
             let endpoint = "";
             switch (tai) {
                 case "tai1h":
-                    endpoint = "/identity/Customers1H";
+                    endpoint = `${API_URL}/identity/Customers1H`;
                     break;
                 case "tai7h":
-                    endpoint = "/identity/Customers7H";
+                    endpoint = `${API_URL}/identity/Customers7H`;
                     break;
                 case "tai9h":
-                    endpoint = "/identity/Customers9H";
+                    endpoint = `${API_URL}/identity/Customers9H`;
                     break;
                 default:
                     return;
@@ -90,7 +83,7 @@ const ListCustomers = () => {
         };
     
         fetchCustomers();
-    }, [tai]);
+    }, [tai, API_URL]);
 
     const handleChange = (e) => {
         setTai(e.target.value);
@@ -141,13 +134,13 @@ const ListCustomers = () => {
         let endpoint = "";
         switch (tai) {
             case "tai1h":
-                endpoint = `/identity/Customers1H/${id}`;
+                endpoint = `${API_URL}/identity/Customers1H/${id}`;
                 break;
             case "tai7h":
-                endpoint = `/identity/Customers7H/${id}`;
+                endpoint = `${API_URL}/identity/Customers7H/${id}`;
                 break;
             case "tai9h":
-                endpoint = `/identity/Customers9H/${id}`;
+                endpoint = `${API_URL}/identity/Customers9H/${id}`;
                 break;
             default:
                 return;
@@ -181,6 +174,8 @@ const ListCustomers = () => {
         }
     };
 
+
+    /*
     const handlePrint = () => {
         // Tạo một cửa sổ mới
         const printWindow = window.open('', '', 'height=600,width=800');
@@ -201,7 +196,27 @@ const ListCustomers = () => {
         printWindow.focus();
         printWindow.print();
     };
+    */
     
+    const handlePrint = () => {
+        const orderMap = noidonOrder.reduce((map, item) => {
+            map[item.noidon] = item.thutu;
+            return map;
+        }, {});
+    
+        const sortedCustomers = [...customers].sort((a, b) => {
+            const orderA = orderMap[a.noidon] || Infinity;
+            const orderB = orderMap[b.noidon] || Infinity;
+            return orderA - orderB;
+        });
+    
+        navigate('/print', {
+            state: {
+                customers: sortedCustomers, // Truyền danh sách đã sắp xếp
+                taiLabel: getTaiLabel()
+            }
+        });
+    };
 
     return (
         <div>
@@ -272,11 +287,7 @@ const ListCustomers = () => {
                                             style={{ backgroundColor: 'red', color: 'white', marginLeft: '10px' }}>Xoá</button>
                                 </td>
                                 <td>
-                                    {customer.id === editedId ? (
-                                        <span style={{ color: 'green', marginLeft: '10px' }}>
-                                            Vừa mới sửa
-                                        </span>
-                                    ) : customer.id === maxId ? (
+                                    {customer.id === maxId ? (
                                         <span style={{ color: 'green', marginLeft: '10px' }}>
                                             Vừa mới nhập
                                         </span>

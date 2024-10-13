@@ -3,6 +3,7 @@ import Textfield from '@atlaskit/textfield';
 import { useNavigate } from 'react-router-dom';
 import Button from "./Button.jsx";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import axios from 'axios';
 
 function DataInputForm() {
   const [formData, setFormData] = useState({
@@ -17,15 +18,45 @@ function DataInputForm() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [messageVisible, setMessageVisible] = useState(true); 
+  const [suggestions, setSuggestions] = useState([]);
 
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    if (formData.noiDon.length >= 1) { // Khi người dùng nhập từ 1 ký tự trở lên
+      axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${formData.noiDon}`)
+        .then((response) => {
+          console.log("Dữ liệu phản hồi từ API:", response.data);
+          setSuggestions(response.data); // Cập nhật danh sách gợi ý
+        })
+        .catch((error) => {
+          console.error('Lỗi khi lấy gợi ý:', error);
+        });
+    } else {
+      setSuggestions([]); // Xoá gợi ý nếu chuỗi quá ngắn
+    }
+  }, [formData.noiDon, API_URL]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [e.target.name]: e.target.value
     });
+  };
+
+  const handleView = () => {
+    console.log("Giá trị tai hiện tại:", formData.tai);
+    navigate(`/customers`, { state: { tai: formData.tai } });
+  };
+
+  // Hàm chọn gợi ý
+  const handleSuggestionClick = (suggestion) => {
+    setFormData({
+      ...formData,
+      noiDon: suggestion
+    });
+    setSuggestions([]); // Xoá gợi ý ngay khi chọn
   };
 
   const handleSubmit = async () => {
@@ -33,13 +64,13 @@ function DataInputForm() {
 
     switch (formData.tai) {
       case 'tai1h':
-        endpoint = '/identity/Customers1H';
+        endpoint = `${API_URL}/identity/Customers1H`;
         break;
       case 'tai7h':
-        endpoint = '/identity/Customers7H';
+        endpoint = `${API_URL}/identity/Customers7H`;
         break;
       case 'tai9h':
-        endpoint = '/identity/Customers9H';
+        endpoint = `${API_URL}/identity/Customers9H`;
         break;
       default:
         console.log("Vui lòng chọn một loại tài.");
@@ -47,49 +78,24 @@ function DataInputForm() {
     }
 
     try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          id: formData.id,
-          sdt: formData.soDT,
-          sove: formData.soGhe,
-          noidon: formData.noiDon,
-          noidi: formData.noiDi
-        })
+      await axios.post(endpoint, {
+        id: formData.id,
+        sdt: formData.soDT,
+        sove: formData.soGhe,
+        noidon: formData.noiDon,
+        noidi: formData.noiDi
       });
-
-      if (response.ok) {
-        setSuccessMessage('Gửi dữ liệu thành công');
-        setErrorMessage('');
-        setMessageVisible(true);
-      } else {
-        setSuccessMessage('');
-        console.error('Có lỗi xảy ra trong quá trình gửi dữ liệu');
-        const errorData = await response.json();
-        console.error('Lỗi:', errorData);
-        setErrorMessage('Có lỗi xảy ra trong quá trình gửi dữ liệu');
-        setMessageVisible(true);
-      }
+  
+      setSuccessMessage('Gửi dữ liệu thành công');
+      setErrorMessage('');
+      setMessageVisible(true);
     } catch (error) {
-      console.error('Lỗi khi gửi yêu cầu:', error);
+      console.error('Có lỗi xảy ra trong quá trình gửi dữ liệu:', error);
       setSuccessMessage('');
-      setErrorMessage('Lỗi khi gửi yêu cầu');
+      setErrorMessage('Có lỗi xảy ra trong quá trình gửi dữ liệu');
       setMessageVisible(true);
     }
   };
-
-  const handleView = () => {
-    if (formData.tai === 'tai1h') {
-        navigate('/customers1H', { state: { tai: formData.tai } });
-    } else if (formData.tai === 'tai7h') {
-        navigate('/customers7H', { state: { tai: formData.tai } });
-    } else if (formData.tai === 'tai9h') {
-        navigate('/customers9H', { state: { tai: formData.tai } });
-    }
-};
   
   useEffect(() => {
     if (messageVisible) {
@@ -136,14 +142,33 @@ function DataInputForm() {
         />
       </div>
 
-      <div style={{ marginBottom: '10px' }}>
+      <div style={{ marginBottom: '10px', position: 'relative' }}>
         <Textfield
           name="noiDon"
           placeholder="Điền nơi đón"
           value={formData.noiDon}
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
+          autoComplete="off"
         />
+        {/* Danh sách gợi ý tùy chỉnh */}
+        {suggestions.length > 0 && !suggestions.some(s => s.noidon === formData.noiDon) && ( // Chỉ hiển thị nếu không có gợi ý trùng
+          <ul style={{ 
+              border: '1px solid #ccc', 
+              padding: '0', 
+              margin: '0', 
+              position: 'absolute', 
+              zIndex: '1000', 
+              backgroundColor: 'white', 
+              listStyleType: 'none' // Đảm bảo không có dấu chấm
+            }}>
+            {suggestions.map((suggestion, index) => (
+              <li key={index} onClick={() => handleSuggestionClick(suggestion.noidon)} style={{ padding: '8px', cursor: 'pointer' }}>
+                {suggestion.noidon}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div style={{ marginBottom: '10px' }}>
