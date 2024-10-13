@@ -96,7 +96,6 @@ function DataInputForm() {
       // Reset form data
       setFormData({
         id: '',
-        tai: 'tai1h',
         soDT: '',
         soGhe: '',
         noiDon: '',
