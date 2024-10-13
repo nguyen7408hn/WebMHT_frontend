@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import Card from './Card.jsx';
 import DataInputForm from './DataInputForm.jsx';
 import ListCustomers from './ListCustomers.jsx';
 import UpdateCustomerForm1H from './UpdateCustomerForm1H.jsx';
@@ -27,10 +26,8 @@ function AppContent() {
     <div style={{ display: 'flex', alignItems: 'center' }}>
       {location.pathname === '/' && (
         <div style={{ marginRight: '20px' }}>
-          <Card />
         </div>
       )}
-        
       <div>
         <Routes>
           <Route path='/' element={<DataInputForm />} />
