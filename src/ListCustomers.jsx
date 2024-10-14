@@ -161,6 +161,37 @@ const ListCustomers = () => {
         }
     };
 
+    const handleDeleteAll = async () => {
+        let endpoint = "";
+        switch (tai) {
+            case "tai1h":
+                endpoint = `${API_URL}/identity/Customers1H/customers`;
+                break;
+            case "tai7h":
+                endpoint = `${API_URL}/identity/Customers7H/customers`;
+                break;
+            case "tai9h":
+                endpoint = `${API_URL}/identity/Customers9H/customers`;
+                break;
+            default:
+                return;
+        }
+    
+        try {
+            const response = await fetch(endpoint, {
+                method: 'DELETE'
+            });
+    
+            if (response.ok) {
+                setCustomers([]); // Xóa danh sách khách hàng trong state
+            } else {
+                throw new Error("Lỗi khi xoá tất cả khách hàng");
+            }
+        } catch (error) {
+            setError(error.message);
+        }
+    };
+
     const getTaiLabel = () => {
         switch (tai) {
             case "tai1h":
@@ -268,6 +299,7 @@ const ListCustomers = () => {
                             <th>Số điện thoại</th>
                             <th>Số vé</th>
                             <th>Nơi đón</th>
+                            <th>Ghi chú</th>
                             <th>Nơi đi</th>
                             <th>Sửa/Xoá</th>
                             <th>Lưu ý</th>
@@ -280,6 +312,7 @@ const ListCustomers = () => {
                                 <td>{customer.sdt}</td>
                                 <td>{customer.sove}</td>
                                 <td>{customer.noidon}</td>
+                                <td>{customer.ghichu}</td>
                                 <td>{customer.noidi}</td>
                                 <td>
                                     <button className='btn btn-info' onClick={() => updateCustomers(customer.id)}>Sửa</button>
@@ -297,6 +330,13 @@ const ListCustomers = () => {
                         ))}
                     </tbody>
                 </table>
+                {/* Nút Xoá hết */}
+                <button className='btn btn-danger'
+                    onClick={handleDeleteAll} 
+                    style={{ marginTop: '20px', padding: '10px 20px', fontSize: '16px', backgroundColor: 'red', color: 'white' }}
+                >
+                    Xoá hết
+                </button>
             </div>
         </div>
     );

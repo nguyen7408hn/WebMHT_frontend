@@ -12,7 +12,8 @@ function DataInputForm() {
     soDT: '',
     soGhe: '',
     noiDon: '',
-    noiDi: ''
+    noiDi: '',
+    ghiChu: ''
   });
   
   const [successMessage, setSuccessMessage] = useState('');
@@ -106,7 +107,8 @@ function DataInputForm() {
         sdt: formData.soDT,
         sove: formData.soGhe,
         noidon: formData.noiDon,
-        noidi: formData.noiDi
+        noidi: formData.noiDi,
+        ghichu: formData.ghiChu
       });
   
       setSuccessMessage('Gửi dữ liệu thành công');
@@ -123,7 +125,8 @@ function DataInputForm() {
         soDT: '',
         soGhe: '',
         noiDon: '',
-        noiDi: ''
+        noiDi: '',
+        ghiChu: ''
       }));
       
       setSuggestions([]);
@@ -229,6 +232,17 @@ function DataInputForm() {
 
       <div style={{ marginBottom: '10px' }}>
         <Textfield
+          name="ghiChu"
+          placeholder="Điền ghi chú (gửi hàng, say xe, giường dưới, có bé,...)"
+          value={formData.ghiChu}
+          onChange={handleChange}
+          onMouseEnter={handleMouseEnter}
+          onFocus={handleFocusOther} // Thêm sự kiện focus
+        />
+      </div>
+
+      <div style={{ marginBottom: '10px' }}>
+        <Textfield
           name="noiDi"
           placeholder="Điền nơi đi"
           value={formData.noiDi}
@@ -261,6 +275,7 @@ function DataInputForm() {
           <p><strong>Số điện thoại:</strong> {submittedData.soDT}</p>
           <p><strong>Số ghế:</strong> {submittedData.soGhe}</p>
           <p><strong>Nơi đón:</strong> {submittedData.noiDon}</p>
+          <p><strong>Ghi chú:</strong> {submittedData.ghiChu}</p>
           <p><strong>Nơi đi:</strong> {submittedData.noiDi}</p>
         </div>
       )}

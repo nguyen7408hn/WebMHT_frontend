@@ -68,7 +68,7 @@ const Print = () => {
         : ''; // Nếu không có số điện thoại thì để trống
 
         data[`sdt${index + 1}`] = formattedPhone; // Sử dụng số điện thoại đã định dạng
-        data[`sove${index + 1}`] = customer.sove || ''; // Nếu không có sove thì để trống
+        data[`g${index + 1}`] = customer.sove || ''; // Nếu không có sove thì để trống
         data[`noidon${index + 1}`] = customer.noidon || ''; // Nếu không có noidon thì để trống
         data[`noidi${index + 1}`] = customer.noidi || ''; // Nếu không có noidi thì để trống
       });
@@ -76,7 +76,7 @@ const Print = () => {
       // Thay thế các nhãn không có dữ liệu bằng khoảng trống
       for (let i = customers.length ; i < 1000; i++) {
         data[`sdt${i + 1}`] = '';
-        data[`sove${i + 1}`] = '';
+        data[`g${i + 1}`] = '';
         data[`noidon${i + 1}`] = '';
         data[`noidi${i + 1}`] = '';
       }
