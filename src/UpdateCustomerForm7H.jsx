@@ -10,6 +10,7 @@ const UpdateCustomerForm7H = () => {
     sdt: '',
     sove: '',
     noidon: '',
+    ghichu: '',
     noidi: ''
   });
   const [successMessage, setSuccessMessage] = useState('');
@@ -28,6 +29,7 @@ const UpdateCustomerForm7H = () => {
             sdt: data.sdt,
             sove: data.sove,
             noidon: data.noidon,
+            ghichu: data.ghichu,
             noidi: data.noidi
           });
         } else {
@@ -132,6 +134,16 @@ const UpdateCustomerForm7H = () => {
           name="noidon"
           placeholder="Điền nơi đón"
           value={formData.noidon}
+          onChange={handleChange}
+          onMouseEnter={handleMouseEnter}
+        />
+      </div>
+
+      <div style={{ marginBottom: '10px' }}>
+        <Textfield
+          name="ghichu"
+          placeholder="Điền ghi chú"
+          value={formData.ghichu}
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
         />

@@ -71,6 +71,7 @@ const Print = () => {
         data[`g${index + 1}`] = customer.sove || ''; // Nếu không có sove thì để trống
         data[`noidon${index + 1}`] = customer.noidon || ''; // Nếu không có noidon thì để trống
         data[`noidi${index + 1}`] = customer.noidi || ''; // Nếu không có noidi thì để trống
+        data[`c${index + 1}`] = customer.ghichu ? `(${customer.ghichu})` : ''; // Nếu không có ghichu thì để trống
       });
   
       // Thay thế các nhãn không có dữ liệu bằng khoảng trống
@@ -79,6 +80,7 @@ const Print = () => {
         data[`g${i + 1}`] = '';
         data[`noidon${i + 1}`] = '';
         data[`noidi${i + 1}`] = '';
+        data[`c${i + 1}`] = '';
       }
   
       // Set the data into the template
