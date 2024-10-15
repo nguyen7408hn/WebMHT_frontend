@@ -112,6 +112,26 @@ const ListCustomers = () => {
         navigate('/listthutunoidon');
     }
 
+    const calculateTotalTickets = () => {
+        return customers.reduce((total, customer) => total + (customer.sove || 0), 0);
+    };
+
+    const calculateTicketsStartingWithVe = () => {
+        return customers.reduce((total, customer) => {
+            // Check if sdt starts with "Về"
+            if (customer.sdt.startsWith("Về")) {
+                return total + (customer.sove || 0); // Include if condition is met
+            }
+            return total; // Return current total if condition is not met
+        }, 0);
+    };
+
+    const calculateVeDi = () => {
+        const totalTickets = calculateTotalTickets();
+        const totalVeVe = calculateTicketsStartingWithVe();
+        return totalTickets - totalVeVe; // Vé đi = Tổng vé - Vé về
+    };
+
     function updateCustomers(id) {
         let updatePath = "";
         switch (tai) {
@@ -292,6 +312,11 @@ const ListCustomers = () => {
                 <h2 className='text-center'>Danh sách khách đặt vé đi. {getTaiLabel()}</h2>
                 {loading && <p>Loading...</p>}
                 {error && <p style={{ color: 'red' }}>{error}</p>}
+
+                <h4 className='text-center' style={{ color: 'green' }}>
+                    Số khách đi: {calculateVeDi()} Và Số khách về: {calculateTicketsStartingWithVe()}
+                </h4>
+                
                 <table className='table table-striped table-bordered'>
                     <thead>
                         <tr>

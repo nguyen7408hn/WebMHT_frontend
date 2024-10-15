@@ -54,10 +54,24 @@ const Print = () => {
         paragraphLoop: true,
         linebreaks: true,
       });
+
+      // Get current date
+      const today = new Date();
+      today.setDate(today.getDate() + 1); // Thêm 1 ngày vào hôm nay để lấy ngày mai
+
+      const options = { weekday: 'long' }; // Để lấy tên đầy đủ của ngày trong tuần
+      const thu = today.toLocaleDateString('vi-VN', options); // Tên ngày trong tuần bằng tiếng Việt
+      const d = today.getDate(); // Ngày trong tháng
+      const m = today.getMonth() + 1; // Tháng (chỉ số bắt đầu từ 0, nên cộng 1)
+      const y = today.getFullYear(); // Năm đầy đủ
   
       // Prepare data for the placeholders
       const data = {
-        tai: taiLabel || '', // Sử dụng taiLabel
+        tai: taiLabel === 'Tài 1h' ? '1' : taiLabel === 'Tài 7h' ? '7' : taiLabel === 'Tài 9h' ? '9' : '',
+        thu: thu,
+        d: d,
+        m: m,
+        y: y,
       };
   
       // Chỉ thêm dữ liệu cho các khách hàng có thông tin thực tế
