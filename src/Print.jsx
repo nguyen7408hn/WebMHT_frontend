@@ -10,6 +10,7 @@ const Print = () => {
   const location = useLocation();
   const customers = location.state?.customers || [];
   const taiLabel = location.state?.taiLabel || ''; // Nhận giá trị tai từ location.state
+  const veDi = location.state?.veDi || 0; // Lấy giá trị vé đi
   const navigate = useNavigate();
 
   const loadFile = (url, callback) => {
@@ -72,6 +73,7 @@ const Print = () => {
         d: d,
         m: m,
         y: y,
+        sum: veDi,
       };
   
       // Chỉ thêm dữ liệu cho các khách hàng có thông tin thực tế

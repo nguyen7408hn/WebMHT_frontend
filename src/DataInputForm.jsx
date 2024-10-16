@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Textfield from '@atlaskit/textfield';
 import { useNavigate } from 'react-router-dom';
 import Button from "./Button.jsx";
@@ -8,79 +8,127 @@ import axios from 'axios';
 function DataInputForm() {
   const [formData, setFormData] = useState({
     id: '',
-    tai: 'tai1h', // Giữ nguyên giá trị mặc định
+    tai: 'tai1h',
     soDT: '',
     soGhe: '',
     noiDon: '',
     noiDi: '',
     ghiChu: ''
   });
-  
+
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [messageVisible, setMessageVisible] = useState(true); 
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false); 
-  const [submittedData, setSubmittedData] = useState(null); // Trạng thái mới để lưu thông tin đã gửi
+  const [submittedData, setSubmittedData] = useState(null);
   const [lastNoiDon, setLastNoiDon] = useState('');
+  const [suggestionsNoiDi, setSuggestionsNoiDi] = useState([]);
+  const [showSuggestionsNoiDi, setShowSuggestionsNoiDi] = useState(false);
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
 
+  const goiyNoiDi = useMemo(() => [
+    "Miền Đông",
+    "Nhi Đồng 1",
+    "Từ Dũ",
+    "Ung Bướu",
+    "Phú Giáo",
+    "Cổng Xanh",
+    "Chợ Rẫy",
+    "Ung Bướu 2",
+    "Bình Dân",
+    "Phạm Ngọc Thạch",
+    "Tai Mũi Họng",
+    "Y Dược",
+    "Nhi Đồng 2",
+    "Xe Thanh Thuỷ",
+    "Xe Hùng Cường",
+    "Cây Khô",
+    "Nhật Tảo",
+    "BV Gút",
+    "175",
+    "Chỉnh Hình",
+    "Ngã 4 Bình Phước",
+    "Phú Nhuận",
+    "Sân Bay",
+  ], []);
+
   useEffect(() => {
     if (formData.noiDon.length >= 1 && formData.noiDon !== lastNoiDon) {
-        const queryParam = formData.noiDon;
+      const queryParam = formData.noiDon;
 
-        const promises = [
-            axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam}`),
-            axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam.replace(/d/g, 'đ').replace(/D/g, 'Đ')}`)
-        ];
+      const promises = [
+        axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam}`),
+        axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam.replace(/d/g, 'đ').replace(/D/g, 'Đ')}`)
+      ];
 
-        Promise.all(promises)
-            .then((responses) => {
-                const allSuggestions = [...responses[0].data, ...responses[1].data];
-                const uniqueSuggestions = Array.from(new Set(allSuggestions.map(s => s.noidon)))
-                    .map(id => allSuggestions.find(s => s.noidon === id));
+      Promise.all(promises)
+        .then((responses) => {
+          const allSuggestions = [...responses[0].data, ...responses[1].data];
+          const uniqueSuggestions = Array.from(new Set(allSuggestions.map(s => s.noidon)))
+            .map(id => allSuggestions.find(s => s.noidon === id));
 
-                setSuggestions(uniqueSuggestions);
-                setShowSuggestions(true);
-            })
-            .catch((error) => {
-                console.error('Lỗi khi lấy gợi ý:', error);
-            });
+          setSuggestions(uniqueSuggestions);
+          setShowSuggestions(true);
+        })
+        .catch((error) => {
+          console.error('Lỗi khi lấy gợi ý:', error);
+        });
 
-        // Cập nhật lastNoiDon
-        setLastNoiDon(formData.noiDon);
+      setLastNoiDon(formData.noiDon);
     } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
+      setSuggestions([]);
+      setShowSuggestions(false);
     }
-}, [formData.noiDon, API_URL, lastNoiDon]);
+  }, [formData.noiDon, API_URL, lastNoiDon]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setFormData(prevData => ({
-        ...prevData,
-        [name]: value
+      ...prevData,
+      [name]: value
     }));
 
-    // Chỉ hiển thị gợi ý nếu noiDon thực sự thay đổi
     if (name === 'noiDon' && value.length >= 1) {
-        setShowSuggestions(true);
+      setShowSuggestions(true);
     } else {
-        setShowSuggestions(false);
+      setShowSuggestions(false);
+    }
+
+    if (name === 'noiDi') {
+      if (value.length >= 1) {
+        const matches = goiyNoiDi.filter(suggestion => 
+          suggestion.toLowerCase().includes(value.toLowerCase())
+        );
+        setSuggestionsNoiDi(matches);
+        setShowSuggestionsNoiDi(matches.length > 0);
+      } else {
+        setSuggestionsNoiDi([]);
+        setShowSuggestionsNoiDi(false);
+      }
     }
   };
 
   const handleSuggestionClick = (suggestion) => {
-    setFormData((prevData) => ({
-        ...prevData,
-        noiDon: suggestion
+    setFormData(prevData => ({
+      ...prevData,
+      noiDon: suggestion
     }));
-    setLastNoiDon(suggestion); // Cập nhật lastNoiDon
-    setSuggestions([]); // Xoá gợi ý ngay khi chọn
-    setShowSuggestions(false); // Ẩn bảng gợi ý
+    setLastNoiDon(suggestion);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  const handleSuggestionClickNoiDi = (selectedNoiDi) => {
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      noiDi: selectedNoiDi
+    }));
+    setSuggestionsNoiDi([]);
+    setShowSuggestionsNoiDi(false);
   };
 
   const handleSubmit = async () => {
@@ -110,15 +158,12 @@ function DataInputForm() {
         noidi: formData.noiDi,
         ghichu: formData.ghiChu
       });
-  
+
       setSuccessMessage('Gửi dữ liệu thành công');
       setErrorMessage('');
       setMessageVisible(true);
-
-      // Cập nhật thông tin đã gửi
       setSubmittedData(formData);
 
-      // Reset form data nhưng giữ lại tài
       setFormData((prevData) => ({
         ...prevData,
         id: '',
@@ -149,7 +194,6 @@ function DataInputForm() {
       const timer = setTimeout(() => {
         setMessageVisible(false);
       }, 5000);
-
       return () => clearTimeout(timer);
     }
   }, [messageVisible]);
@@ -165,7 +209,8 @@ function DataInputForm() {
   };
 
   const handleFocusOther = () => {
-    setShowSuggestions(false); // Ẩn gợi ý khi focus vào ô khác
+    setShowSuggestions(false);
+    setShowSuggestionsNoiDi(false); // Ẩn gợi ý nơi đi khi focus vào ô khác
   };
 
   return (
@@ -186,7 +231,7 @@ function DataInputForm() {
           value={formData.soDT}
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
-          onFocus={handleFocusOther} // Thêm sự kiện focus
+          onFocus={handleFocusOther}
         />
       </div>
 
@@ -197,7 +242,7 @@ function DataInputForm() {
           value={formData.soGhe}
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
-          onFocus={handleFocusOther} // Thêm sự kiện focus
+          onFocus={handleFocusOther}
         />
       </div>
 
@@ -208,17 +253,17 @@ function DataInputForm() {
           value={formData.noiDon}
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
-          onFocus={handleFocusNoiDon} // Thêm sự kiện focus
+          onFocus={handleFocusNoiDon}
           autoComplete="off"
         />
         {showSuggestions && suggestions.length > 0 && (
-          <ul style={{ 
-              border: '1px solid #ccc', 
-              padding: '0', 
-              margin: '0', 
-              position: 'absolute', 
-              zIndex: '1000', 
-              backgroundColor: 'white', 
+          <ul style={{
+              border: '1px solid #ccc',
+              padding: '0',
+              margin: '0',
+              position: 'absolute',
+              zIndex: '1000',
+              backgroundColor: 'white',
               listStyleType: 'none'
             }}>
             {suggestions.map((suggestion, index) => (
@@ -237,19 +282,36 @@ function DataInputForm() {
           value={formData.ghiChu}
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
-          onFocus={handleFocusOther} // Thêm sự kiện focus
+          onFocus={handleFocusOther}
         />
       </div>
 
-      <div style={{ marginBottom: '10px' }}>
+      <div style={{ marginBottom: '10px', position: 'relative' }}>
         <Textfield
           name="noiDi"
           placeholder="Điền nơi đi"
           value={formData.noiDi}
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
-          onFocus={handleFocusOther} // Thêm sự kiện focus
+          onFocus={handleFocusOther}
         />
+        {showSuggestionsNoiDi && suggestionsNoiDi.length > 0 && (
+          <ul style={{
+              border: '1px solid #ccc',
+              padding: '0',
+              margin: '0',
+              position: 'absolute',
+              zIndex: '1000',
+              backgroundColor: 'white',
+              listStyleType: 'none'
+            }}>
+            {suggestionsNoiDi.map((suggestion, index) => (
+              <li key={index} onClick={() => handleSuggestionClickNoiDi(suggestion)} style={{ padding: '8px', cursor: 'pointer' }}>
+                {suggestion}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>

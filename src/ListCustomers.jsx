@@ -260,11 +260,14 @@ const ListCustomers = () => {
             const orderB = orderMap[b.noidon] || Infinity;
             return orderA - orderB;
         });
+
+        const veDi = calculateVeDi();
     
         navigate('/print', {
             state: {
                 customers: sortedCustomers, // Truyền danh sách đã sắp xếp
-                taiLabel: getTaiLabel()
+                taiLabel: getTaiLabel(),
+                veDi: veDi // Truyền vé đi
             }
         });
     };
