@@ -53,6 +53,7 @@ function DataInputForm() {
     "Ngã 4 Bình Phước",
     "Phú Nhuận",
     "Sân Bay",
+    "Mắt",
   ], []);
 
   useEffect(() => {

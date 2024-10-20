@@ -98,6 +98,18 @@ const Print = () => {
         data[`noidi${i + 1}`] = '';
         data[`c${i + 1}`] = '';
       }
+
+      // Tính tổng số vé cho các nhóm khách hàng
+      const totalTickets = Array(Math.ceil(customers.length / 17)).fill(0);
+      customers.forEach((customer, index) => {
+        const groupIndex = Math.floor(index / 17);
+        totalTickets[groupIndex] += customer.sove || 0; // Cộng số vé của từng khách hàng vào nhóm tương ứng
+      });
+
+      // Thay thế các nhãn {di1}, {di2}, ...
+      totalTickets.forEach((total, index) => {
+        data[`di${index + 1}`] = total; // Thay thế nhãn {di1}, {di2}, ...
+      });
   
       // Set the data into the template
       doc.render(data);
