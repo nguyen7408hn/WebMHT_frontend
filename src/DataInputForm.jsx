@@ -54,6 +54,15 @@ function DataInputForm() {
     "Phú Nhuận",
     "Sân Bay",
     "Mắt",
+    "Nhiệt Đới",
+    "Hoà Hảo",
+    "Tim",
+    "Da Liễu",
+    "Thần kinh QT",
+    "Phụ sản QT",
+    "Mắt Việt Nga",
+    "Mắt Sài Gòn",
+    "Cổng chào BD",
   ], []);
 
   useEffect(() => {
