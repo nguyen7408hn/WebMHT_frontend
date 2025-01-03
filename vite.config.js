@@ -5,6 +5,7 @@ export default defineConfig({
   assetsInclude: ['**/*.docx'],
   plugins: [react()],
   server: {
+    host: true, // Bật mạng nội bộ
     proxy: {
       '/identity': 'http://localhost:8080'
     }

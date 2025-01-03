@@ -94,8 +94,25 @@ function DataInputForm() {
     }
   }, [formData.noiDon, API_URL, lastNoiDon]);
 
+  const formatPhoneNumber = (value) => {
+    return value.replace(/\D/g, '') // Xóa ký tự không phải số
+                .replace(/(\d{4})(\d{3})?(\d{3})?/, (match, p1, p2, p3) => {
+                  if (p2 && p3) return `${p1} ${p2} ${p3}`;
+                  if (p2) return `${p1} ${p2}`;
+                  return p1;
+                });
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === 'soDT') {
+      setFormData(prevData => ({
+        ...prevData,
+        [name]: formatPhoneNumber(value)
+      }));
+      return;
+    }
 
     setFormData(prevData => ({
       ...prevData,
@@ -160,13 +177,29 @@ function DataInputForm() {
     }
 
     try {
+
+      // Loại bỏ khoảng trắng trước khi gửi
+      const formattedData = {
+      ...formData,
+      sdt: formData.soDT.replace(/\s+/g, ''), // Xóa toàn bộ khoảng trắng
+      };
+
+      console.log("Dữ liệu gửi đi:", {
+        id: formattedData.id,
+        sdt: formattedData.sdt,
+        sove: formattedData.soGhe,
+        noidon: formattedData.noiDon,
+        noidi: formattedData.noiDi,
+        ghichu: formattedData.ghiChu,
+      });
+
       await axios.post(endpoint, {
-        id: formData.id,
-        sdt: formData.soDT,
-        sove: formData.soGhe,
-        noidon: formData.noiDon,
-        noidi: formData.noiDi,
-        ghichu: formData.ghiChu
+        id: formattedData.id,
+        sdt: formattedData.sdt, // Sử dụng trường đã loại bỏ khoảng cách
+        sove: formattedData.soGhe,
+        noidon: formattedData.noiDon,
+        noidi: formattedData.noiDi,
+        ghichu: formattedData.ghiChu
       });
 
       setSuccessMessage('Gửi dữ liệu thành công');
