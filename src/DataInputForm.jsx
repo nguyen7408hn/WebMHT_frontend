@@ -183,7 +183,7 @@ function DataInputForm() {
       // Loại bỏ khoảng trắng trước khi gửi và thêm chữ "Về" nếu là "Khách về"
       const formattedData = {
       ...formData,
-      sdt: (customerType === 'Khách về' ? `Về ${formData.soDT}` : formData.soDT.replace(/\s+/g, '')),
+      sdt: customerType === 'Khách về' ? `Về ${formData.soDT.replace(/\s+/g, '')}` : formData.soDT.replace(/\s+/g, ''),
       };
 
       console.log("Dữ liệu gửi đi:", {

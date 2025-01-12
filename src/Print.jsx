@@ -39,6 +39,19 @@ const Print = () => {
     }
   };
 
+  // Hàm định dạng số điện thoại
+const formatPhoneNumber = (phoneNumber) => {
+  // Kiểm tra nếu số điện thoại bắt đầu bằng "Về"
+  if (phoneNumber.startsWith('Về ')) {
+    // Lấy phần số điện thoại và áp dụng định dạng
+    const formattedPhone = phoneNumber.replace('Về ', '').replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
+    return `Về ${formattedPhone}`;
+  } else {
+    // Nếu không có "Về", chỉ định dạng số điện thoại
+    return phoneNumber.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
+  }
+};
+
   const handlePrint = () => {
     // Load the Word template
     loadFile(template, (error, content) => {
@@ -77,18 +90,18 @@ const Print = () => {
       };
   
       // Chỉ thêm dữ liệu cho các khách hàng có thông tin thực tế
-      customers.forEach((customer, index) => {
-        // Định dạng lại số điện thoại thành 4-3-3
-        const formattedPhone = customer.sdt
-        ? `${customer.sdt.substring(0, 4)} ${customer.sdt.substring(4, 7)} ${customer.sdt.substring(7)}`
+    customers.forEach((customer, index) => {
+      // Định dạng lại số điện thoại thành 4-3-3, với tiền tố "Về" nếu là khách về
+      const formattedPhone = customer.sdt
+        ? formatPhoneNumber(customer.sdt) // Áp dụng hàm định dạng
         : ''; // Nếu không có số điện thoại thì để trống
 
-        data[`sdt${index + 1}`] = formattedPhone; // Sử dụng số điện thoại đã định dạng
-        data[`g${index + 1}`] = customer.sove || ''; // Nếu không có sove thì để trống
-        data[`noidon${index + 1}`] = customer.noidon || ''; // Nếu không có noidon thì để trống
-        data[`noidi${index + 1}`] = customer.noidi || ''; // Nếu không có noidi thì để trống
-        data[`c${index + 1}`] = customer.ghichu ? `(${customer.ghichu})` : ''; // Nếu không có ghichu thì để trống
-      });
+      data[`sdt${index + 1}`] = formattedPhone; // Sử dụng số điện thoại đã định dạng
+      data[`g${index + 1}`] = customer.sove || ''; // Nếu không có sove thì để trống
+      data[`noidon${index + 1}`] = customer.noidon || ''; // Nếu không có noidon thì để trống
+      data[`noidi${index + 1}`] = customer.noidi || ''; // Nếu không có noidi thì để trống
+      data[`c${index + 1}`] = customer.ghichu ? `(${customer.ghichu})` : ''; // Nếu không có ghichu thì để trống
+    });
   
       // Thay thế các nhãn không có dữ liệu bằng khoảng trống
       for (let i = customers.length ; i < 1000; i++) {
