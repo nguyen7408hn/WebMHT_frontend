@@ -25,6 +25,8 @@ function DataInputForm() {
   const [lastNoiDon, setLastNoiDon] = useState('');
   const [suggestionsNoiDi, setSuggestionsNoiDi] = useState([]);
   const [showSuggestionsNoiDi, setShowSuggestionsNoiDi] = useState(false);
+  const [customerType, setCustomerType] = useState('Khách đi');
+
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
@@ -178,10 +180,10 @@ function DataInputForm() {
 
     try {
 
-      // Loại bỏ khoảng trắng trước khi gửi
+      // Loại bỏ khoảng trắng trước khi gửi và thêm chữ "Về" nếu là "Khách về"
       const formattedData = {
       ...formData,
-      sdt: formData.soDT.replace(/\s+/g, ''), // Xóa toàn bộ khoảng trắng
+      sdt: (customerType === 'Khách về' ? `Về ${formData.soDT}` : formData.soDT.replace(/\s+/g, '')),
       };
 
       console.log("Dữ liệu gửi đi:", {
@@ -267,7 +269,29 @@ function DataInputForm() {
         </select>
       </div>
 
-      <div style={{ marginBottom: '10px' }}>
+      <div style={{ marginBottom: '10px', marginLeft: '0px' }}>
+      <div style={{ marginLeft: '0px', marginBottom:'10px'}}>
+          <label>
+            <input
+              type="radio"
+              name="customerType"
+              value="Khách đi"
+              checked={customerType === 'Khách đi'}
+              onChange={(e) => setCustomerType(e.target.value)}
+            />
+            Khách đi
+          </label>
+          <label style={{ marginLeft: '20px' }}>
+            <input
+              type="radio"
+              name="customerType"
+              value="Khách về"
+              checked={customerType === 'Khách về'}
+              onChange={(e) => setCustomerType(e.target.value)}
+            />
+            Khách về
+          </label>
+        </div>
         <Textfield
           name="soDT"
           placeholder="Điền số điện thoại"
