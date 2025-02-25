@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Textfield from '@atlaskit/textfield';
 import { useNavigate } from 'react-router-dom';
 import Button from "./Button.jsx";
@@ -26,6 +26,7 @@ function DataInputForm() {
   const [suggestionsNoiDi, setSuggestionsNoiDi] = useState([]);
   const [showSuggestionsNoiDi, setShowSuggestionsNoiDi] = useState(false);
   const [customerType, setCustomerType] = useState('Khách đi');
+  const debounceTimeout = useRef(null);
 
 
   const navigate = useNavigate();
@@ -68,32 +69,42 @@ function DataInputForm() {
   ], []);
 
   useEffect(() => {
-    if (formData.noiDon.length >= 1 && formData.noiDon !== lastNoiDon) {
+    if (formData.noiDon.length < 1 || formData.noiDon === lastNoiDon) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    debounceTimeout.current = setTimeout(() => {
       const queryParam = formData.noiDon;
 
-      const promises = [
-        axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam}`),
-        axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam.replace(/d/g, 'đ').replace(/D/g, 'Đ')}`)
-      ];
+      const fetchData = async () => {
+        try {
+          const responses = await Promise.all([
+            axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam}`),
+            axios.get(`${API_URL}/identity/ThuTuNoiDon/suggestions?query=${queryParam.replace(/d/g, 'đ').replace(/D/g, 'Đ')}`)
+          ]);
 
-      Promise.all(promises)
-        .then((responses) => {
           const allSuggestions = [...responses[0].data, ...responses[1].data];
           const uniqueSuggestions = Array.from(new Set(allSuggestions.map(s => s.noidon)))
             .map(id => allSuggestions.find(s => s.noidon === id));
 
           setSuggestions(uniqueSuggestions);
           setShowSuggestions(true);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error('Lỗi khi lấy gợi ý:', error);
-        });
+        }
+      };
 
+      fetchData();
       setLastNoiDon(formData.noiDon);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
+    }, 300); // Đợi 300ms sau khi nhập mới gọi API
+
+    return () => clearTimeout(debounceTimeout.current);
   }, [formData.noiDon, API_URL, lastNoiDon]);
 
   const formatPhoneNumber = (value) => {

@@ -16,6 +16,7 @@
     "docxtemplater": "^3.51.0",
     "file-saver": "^2.0.5",
     "jszip-utils": "^0.1.0",
+    "lodash": "^4.17.21",
     "mammoth": "^1.8.0",
     "node-fetch": "^3.3.2",
     "pizzip": "^3.1.7",
