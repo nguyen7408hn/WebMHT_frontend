@@ -401,7 +401,7 @@ function DataInputForm() {
         <div style={{ marginTop: '20px' }}>
           <h5>Thông tin đã gửi:</h5>
           <p><strong>Tài:</strong> {submittedData.tai === 'tai1h' ? 'Tài 1H' : submittedData.tai === 'tai7h' ? 'Tài 7H' : 'Tài 9H'}</p>
-          <p><strong>Số điện thoại:</strong> {submittedData.customerType === 'Khách về' ? `Về ${submittedData.soDT.replace(/\s+/g, '')}` : submittedData.soDT.replace(/\s+/g, '')}</p>
+          <p><strong>Số điện thoại:</strong> {submittedData.soDT}</p>
           <p><strong>Số ghế:</strong> {submittedData.soGhe}</p>
           <p><strong>Nơi đón:</strong> {submittedData.noiDon}</p>
           <p><strong>Ghi chú:</strong> {submittedData.ghiChu}</p>
