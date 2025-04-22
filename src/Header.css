@@ -15,9 +15,9 @@
 
 .header-buttons {
     display: flex;
-    gap: 50px; /* ✅ tăng khoảng cách giữa các nút */
-    justify-content: flex-end; /* ✅ xích qua trái nhẹ hơn */
-    padding-right: 20px;       /* ✅ thêm khoảng cách phải nhỏ */
+    gap: 25px; /* ✅ tăng khoảng cách giữa các nút */
+    justify-content: right; /* ✅ xích qua trái nhẹ hơn */
+    /*padding-right: 20px;       /* ✅ thêm khoảng cách phải nhỏ */
     flex-wrap: wrap;
     flex-grow: 1;
   }
