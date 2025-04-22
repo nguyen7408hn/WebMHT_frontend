@@ -107,6 +107,7 @@ function DataInputForm() {
     return () => clearTimeout(debounceTimeout.current);
   }, [formData.noiDon, API_URL, lastNoiDon]);
 
+
   const formatPhoneNumber = (value) => {
     return value.replace(/\D/g, '') // Xóa ký tự không phải số
                 .replace(/(\d{4})(\d{3})?(\d{3})?/, (match, p1, p2, p3) => {
@@ -115,6 +116,28 @@ function DataInputForm() {
                   return p1;
                 });
   };
+
+  useEffect(() => {
+    const cleanSDT = formData.soDT.replace(/\s+/g, '');
+  
+    if (cleanSDT.length >= 9) {
+      axios.get(`${API_URL}/identity/CustomerHistory?sdt=${cleanSDT}`)
+        .then(res => {
+          const last = res.data[0];
+          if (last) {
+            setFormData(prev => ({
+              ...prev,
+              noiDon: last.noidon,
+              noiDi: last.noidi,
+              soGhe: last.sove,
+              ghiChu: last.ghichu
+            }));
+          }
+        })
+        .catch(err => console.error("Lỗi khi lấy lịch sử khách:", err));
+    }
+  }, [formData.soDT, API_URL]); // ✅ thêm API_URL vào đây 
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -194,7 +217,7 @@ function DataInputForm() {
       // Loại bỏ khoảng trắng trước khi gửi và thêm chữ "Về" nếu là "Khách về"
       const formattedData = {
       ...formData,
-      sdt: customerType === 'Khách về' ? `Về ${formData.soDT.replace(/\s+/g, '')}` : formData.soDT.replace(/\s+/g, ''),
+      sdt: customerType === 'Khách về' ? `Về: ${formData.soDT.replace(/\s+/g, '')}` : formData.soDT.replace(/\s+/g, ''),
       };
 
       console.log("Dữ liệu gửi đi:", {
@@ -209,6 +232,15 @@ function DataInputForm() {
       await axios.post(endpoint, {
         id: formattedData.id,
         sdt: formattedData.sdt, // Sử dụng trường đã loại bỏ khoảng cách
+        sove: formattedData.soGhe,
+        noidon: formattedData.noiDon,
+        noidi: formattedData.noiDi,
+        ghichu: formattedData.ghiChu,
+        tai: formattedData.tai // ✅ Gửi thêm trường Tài
+      });
+
+      await axios.post(`${API_URL}/identity/CustomerHistory`, {
+        sdt: formattedData.sdt,
         sove: formattedData.soGhe,
         noidon: formattedData.noiDon,
         noidi: formattedData.noiDi,

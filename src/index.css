@@ -36,3 +36,13 @@
   border: none;
   cursor: pointer;
 }
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  height: 64px;        /* 👈 điều chỉnh kích thước logo */
+  object-fit: contain;
+}

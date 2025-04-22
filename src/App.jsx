@@ -7,6 +7,7 @@ import UpdateCustomerForm9H from './UpdateCustomerForm9H.jsx';
 import NhapThuTuNoiDon from './NhapThuTuNoiDon.jsx';
 import DanhSachNoiDon from './DanhSachNoiDon.jsx';
 import UpdateThuTuNoiDon from './updateThuTuNoiDon.jsx';
+import LichSu from './CustomerHistory.jsx';
 import Print from './Print.jsx';
 
 function App() {
@@ -39,6 +40,7 @@ function AppContent() {
           <Route path='/nhapnoidon' element={<NhapThuTuNoiDon/>}/>
           <Route path='/listthutunoidon' element={<DanhSachNoiDon/>}/>
           <Route path="/print" element={<Print/>} />
+          <Route path="/lichsu" element={<LichSu/>} />
         </Routes>
       </div>
     </div>

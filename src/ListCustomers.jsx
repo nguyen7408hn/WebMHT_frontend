@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
-import Button from "./Button";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Header from './Header';
+import editIcon from './icon/edit.png';
+import deleteIcon from './icon/delete.png';
 
 const ListCustomers = () => {
     const location = useLocation();
@@ -110,6 +112,10 @@ const ListCustomers = () => {
 
     const danhsachthutunoidon = () => {
         navigate('/listthutunoidon');
+    }
+
+    const lichsu = () => {
+        navigate('/lichsu');
     }
 
     const calculateTotalTickets = () => {
@@ -274,100 +280,107 @@ const ListCustomers = () => {
 
     return (
         <div>
-            <div style={{ marginBottom: '10px' }}>
-                <div style={{ display: 'flex', gap: '100px', marginBottom: '10px' }}>
-                    <Button
-                        onClick={handleGoToDataInputForm}
-                        style={{ marginBottom: '10px', padding: '10px 20px', fontSize: '16px' }}
-                    >
-                        Nhập thêm khách
-                    </Button>
-                    <Button
-                        onClick={handlePrint}
-                        style={{ marginBottom: '10px', padding: '10px 20px', fontSize: '16px' }}
-                    >
-                        In
-                    </Button>
-                    <Button
-                        onClick={sapxep}
-                        style={{ marginBottom: '10px', padding: '10px 20px', fontSize: '16px' }}
-                    >
-                        Sắp xếp
-                    </Button>
-                    <Button
-                        onClick={danhsachthutunoidon}
-                        style={{ marginBottom: '10px', padding: '10px 20px', fontSize: '16px' }}
-                    >
-                        Danh Sách Nơi Đón
-                    </Button>
-                </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Tài: </label>
-                    <select value={tai} onChange={handleChange}>
-                        <option value="tai1h">Tài 1h</option>
-                        <option value="tai7h">Tài 7h</option>
-                        <option value="tai9h">Tài 9h</option>
-                    </select>
-                </div>
-            </div>
+          <Header
+            onNhap={handleGoToDataInputForm}
+            onIn={handlePrint}
+            onSapXep={sapxep}
+            onNoiDon={danhsachthutunoidon}
+            onLichSu={lichsu}
+          />
+      
+          <div style={{ marginBottom: '10px', marginLeft: '20px', marginTop: '10px' }}>
+            <label>Tài: </label>
+            <select value={tai} onChange={handleChange}>
+              <option value="tai1h">Tài 1h</option>
+              <option value="tai7h">Tài 7h</option>
+              <option value="tai9h">Tài 9h</option>
+            </select>
+          </div>
+      
+          <div className='container'>
+            <h2 className='text-center'>Danh sách khách đặt vé đi. {getTaiLabel()}</h2>
+            {loading && <p>Loading...</p>}
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+      
+            <h4 className='text-center' style={{ color: 'green' }}>
+              Số khách đi: {calculateVeDi()} Và Số khách về: {calculateTicketsStartingWithVe()}
+            </h4>
+      
+            <table className='table table-striped table-bordered'>
+              <thead>
+                <tr>
+                  <th>STT</th>
+                  <th>Số điện thoại</th>
+                  <th>Số vé</th>
+                  <th>Nơi đón</th>
+                  <th>Ghi chú</th>
+                  <th>Nơi đi</th>
+                  <th>Sửa/Xoá</th>
+                  <th>Lưu ý</th>
+                </tr>
+              </thead>
+              <tbody>
+                {customers.map((customer, index) => (
+                  <tr key={customer.id}>
+                    <td>{index + 1}</td>
+                    <td>{customer.sdt}</td>
+                    <td>{customer.sove}</td>
+                    <td>{customer.noidon}</td>
+                    <td>{customer.ghichu}</td>
+                    <td>{customer.noidi}</td>
+                    <td>
+                        <button
+                            onClick={() => updateCustomers(customer.id)}
+                            style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            marginRight: '10px',
+                            }}
+                            title="Sửa"
+                        >
+                            <img src={editIcon} alt="Sửa" style={{ width: '24px', height: '24px' }} />
+                        </button>
 
-            <div className='container'>
-                <h2 className='text-center'>Danh sách khách đặt vé đi. {getTaiLabel()}</h2>
-                {loading && <p>Loading...</p>}
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-
-                <h4 className='text-center' style={{ color: 'green' }}>
-                    Số khách đi: {calculateVeDi()} Và Số khách về: {calculateTicketsStartingWithVe()}
-                </h4>
-                
-                <table className='table table-striped table-bordered'>
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Số điện thoại</th>
-                            <th>Số vé</th>
-                            <th>Nơi đón</th>
-                            <th>Ghi chú</th>
-                            <th>Nơi đi</th>
-                            <th>Sửa/Xoá</th>
-                            <th>Lưu ý</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {customers.map((customer, index) => (
-                            <tr key={customer.id}>
-                                <td>{index + 1}</td>
-                                <td>{customer.sdt}</td>
-                                <td>{customer.sove}</td>
-                                <td>{customer.noidon}</td>
-                                <td>{customer.ghichu}</td>
-                                <td>{customer.noidi}</td>
-                                <td>
-                                    <button className='btn btn-info' onClick={() => updateCustomers(customer.id)}>Sửa</button>
-                                    <button className='btn btn-danger' onClick={() => handleDelete(customer.id)}
-                                            style={{ backgroundColor: 'red', color: 'white', marginLeft: '10px' }}>Xoá</button>
-                                </td>
-                                <td>
-                                    {customer.id === maxId ? (
-                                        <span style={{ color: 'green', marginLeft: '10px' }}>
-                                            Vừa mới nhập
-                                        </span>
-                                    ) : null}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {/* Nút Xoá hết */}
-                <button className='btn btn-danger'
-                    onClick={handleDeleteAll} 
-                    style={{ marginTop: '20px', padding: '10px 20px', fontSize: '16px', backgroundColor: 'red', color: 'white' }}
-                >
-                    Xoá hết
-                </button>
-            </div>
+                        <button
+                            onClick={() => handleDelete(customer.id)}
+                            style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            }}
+                            title="Xoá"
+                        >
+                            <img src={deleteIcon} alt="Xoá" style={{ width: '24px', height: '24px' }} />
+                        </button>
+                    </td>
+                    <td>
+                      {customer.id === maxId && (
+                        <span style={{ color: 'green', marginLeft: '10px' }}>Vừa mới nhập</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+      
+            <button
+              className='btn btn-danger'
+              onClick={handleDeleteAll}
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                fontSize: '16px',
+                backgroundColor: 'red',
+                color: 'white',
+                marginLeft: '20px',
+              }}
+            >
+              Xoá hết
+            </button>
+          </div>
         </div>
-    );
-};
+      );
+}
 
 export default ListCustomers;

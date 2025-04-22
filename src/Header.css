@@ -1,0 +1,54 @@
+.custom-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background-color: #0099ff;
+  color: white;
+  flex-wrap: wrap;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 50px; /* ✅ tăng khoảng cách giữa các nút */
+    justify-content: flex-end; /* ✅ xích qua trái nhẹ hơn */
+    padding-right: 20px;       /* ✅ thêm khoảng cách phải nhỏ */
+    flex-wrap: wrap;
+    flex-grow: 1;
+  }
+
+.header-buttons button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.2s;
+}
+
+.header-buttons button:hover {
+  transform: scale(1.1);
+}
+
+.header-buttons img {
+  width: 30px;
+  height: 30px;
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+  .custom-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-buttons {
+    margin-top: 8px;
+    width: 100%;
+    justify-content: space-around;
+  }
+}
