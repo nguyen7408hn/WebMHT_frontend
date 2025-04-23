@@ -5,6 +5,11 @@ import Button from "./Button.jsx";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 
+// ✅ Thêm hàm xác định thiết bị di động:
+function isMobileDevice() {
+  return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
 function DataInputForm() {
   const [formData, setFormData] = useState({
     id: '',
@@ -15,6 +20,8 @@ function DataInputForm() {
     noiDi: '',
     ghiChu: ''
   });
+
+  const sdtRef = useRef(null); // ✅ thêm dòng này để dùng focus
 
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -27,6 +34,7 @@ function DataInputForm() {
   const [showSuggestionsNoiDi, setShowSuggestionsNoiDi] = useState(false);
   const [customerType, setCustomerType] = useState('Khách đi');
   const debounceTimeout = useRef(null);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
 
   const navigate = useNavigate();
@@ -94,7 +102,18 @@ function DataInputForm() {
             .map(id => allSuggestions.find(s => s.noidon === id));
 
           setSuggestions(uniqueSuggestions);
-          setShowSuggestions(true);
+
+          // ✅ Nếu người dùng đã nhập đúng 1 trong các gợi ý, không cần show
+          if (uniqueSuggestions.some(s => s.noidon === formData.noiDon)) {
+            setShowSuggestions(false);
+          } else {
+            setShowSuggestions(true);
+          }
+          //setShowSuggestions(true);
+
+          // ✅ Chỗ này quan trọng:
+          setHighlightedIndex(isMobileDevice() ? -1 : 0);
+
         } catch (error) {
           console.error('Lỗi khi lấy gợi ý:', error);
         }
@@ -138,7 +157,6 @@ function DataInputForm() {
     }
   }, [formData.soDT, API_URL]); // ✅ thêm API_URL vào đây 
   
-
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -236,15 +254,22 @@ function DataInputForm() {
         noidon: formattedData.noiDon,
         noidi: formattedData.noiDi,
         ghichu: formattedData.ghiChu,
-        tai: formattedData.tai // ✅ Gửi thêm trường Tài
+        //tai: formattedData.tai // ✅ Gửi thêm trường Tài
       });
 
+      const taiMap = {
+        tai1h: '1H',
+        tai7h: '7H',
+        tai9h: '9H'
+      };
+      
       await axios.post(`${API_URL}/identity/CustomerHistory`, {
         sdt: formattedData.sdt,
         sove: formattedData.soGhe,
         noidon: formattedData.noiDon,
         noidi: formattedData.noiDi,
-        ghichu: formattedData.ghiChu
+        ghichu: formattedData.ghiChu,
+        tai: taiMap[formattedData.tai] || ''  // fallback nếu không khớp
       });
 
       setSuccessMessage('Gửi dữ liệu thành công');
@@ -264,6 +289,12 @@ function DataInputForm() {
       
       setSuggestions([]);
       setShowSuggestions(false);
+
+      // Focus lại ô số điện thoại sau khi gửi thành công
+      if (sdtRef.current) {
+        sdtRef.current.focus();
+      }
+
     } catch (error) {
       console.error('Có lỗi xảy ra trong quá trình gửi dữ liệu:', error);
       setSuccessMessage('');
@@ -342,6 +373,7 @@ function DataInputForm() {
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
           onFocus={handleFocusOther}
+          ref={sdtRef} // ← thêm dòng này
         />
       </div>
 
@@ -365,6 +397,29 @@ function DataInputForm() {
           onMouseEnter={handleMouseEnter}
           onFocus={handleFocusNoiDon}
           autoComplete="off"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault(); // tránh reload trang
+              //Bấm ↑	↓ để chọn gợi ý
+              if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
+                const selected = suggestions[highlightedIndex].noidon;
+                setFormData(prev => ({ ...prev, noiDon: selected }));
+                setSuggestions([]);
+                setShowSuggestions(false);
+                setHighlightedIndex(-1);
+              } else {
+                handleSubmit();
+              }
+            } else if (e.key === 'ArrowDown') {
+              e.preventDefault(); // tránh di chuyển con trỏ xuống dưới
+              setHighlightedIndex(prev => Math.min(prev + 1, suggestions.length - 1));
+            }
+            else if (e.key === 'ArrowUp') {
+              e.preventDefault(); // tránh di chuyển con trỏ lên trên
+              setHighlightedIndex(prev => Math.max(prev - 1, 0));
+            }
+          }}
+
         />
         {showSuggestions && suggestions.length > 0 && (
           <ul style={{
@@ -374,10 +429,18 @@ function DataInputForm() {
               position: 'absolute',
               zIndex: '1000',
               backgroundColor: 'white',
-              listStyleType: 'none'
+              listStyleType: 'none',
+              width: '100%'
             }}>
             {suggestions.map((suggestion, index) => (
-              <li key={index} onClick={() => handleSuggestionClick(suggestion.noidon)} style={{ padding: '8px', cursor: 'pointer' }}>
+              <li 
+                key={index} 
+                onClick={() => handleSuggestionClick(suggestion.noidon)} 
+                style={{ 
+                  padding: '8px', 
+                  cursor: 'pointer',
+                  backgroundColor: index === highlightedIndex ? '#87CEFA' : 'white' // Đổi màu nền khi hover
+                }}>
                 {suggestion.noidon}
               </li>
             ))}
@@ -404,6 +467,12 @@ function DataInputForm() {
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
           onFocus={handleFocusOther}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault(); // tránh reload trang
+              handleSubmit();
+            }
+          }}
         />
         {showSuggestionsNoiDi && suggestionsNoiDi.length > 0 && (
           <ul style={{

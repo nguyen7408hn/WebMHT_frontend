@@ -1,29 +1,37 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // ✅ thêm
-import backIcon from './icon/back.png'; // ✅ import ảnh
+import backIcon from './icon/back.png';
 
 function CustomerHistory() {
   const [histories, setHistories] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10)); // YYYY-MM-DD
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
   const API_URL = import.meta.env.VITE_API_URL;
-  const navigate = useNavigate(); // ✅ thêm
+  const navigate = useNavigate();
 
-  // Format hiển thị dd-MM-yyyy
+  // ✅ Định dạng hiển thị ngày dd-MM-yyyy
   const formatDateDisplay = (dateStr) => {
-    const [year, month, day] = dateStr.split("-");
+    const [year, month, day] = dateStr.split('-');
     return `${day}-${month}-${year}`;
   };
 
-  // Format thời gian dd-MM-yyyy HH:mm
+  // ✅ Định dạng thời gian theo múi giờ Việt Nam
   const formatDateTime = (datetimeStr) => {
-    const d = new Date(datetimeStr);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${day}-${month}-${year} ${hours}:${minutes}`;
+    const date = new Date(datetimeStr);
+    const formatter = new Intl.DateTimeFormat('vi-VN', {
+      timeZone: 'Asia/Ho_Chi_Minh',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+
+    const parts = formatter.formatToParts(date);
+    const get = (type) => parts.find(p => p.type === type)?.value || '';
+
+    return `${get('day')}-${get('month')}-${get('year')} ${get('hour')}:${get('minute')}`;
   };
 
   useEffect(() => {
@@ -37,6 +45,7 @@ function CustomerHistory() {
         console.error("Lỗi khi lấy lịch sử:", err);
       }
     };
+
     fetchHistory();
   }, [selectedDate, API_URL]);
 
@@ -46,22 +55,19 @@ function CustomerHistory() {
         className="btn"
         onClick={() => navigate('/customers')}
         style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            marginBottom: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          marginBottom: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
         }}
-        >
-        <img
-            src={backIcon}
-            alt="Quay lại"
-            style={{ width: '24px', height: '24px' }}
-        />
+      >
+        <img src={backIcon} alt="Quay lại" style={{ width: '24px', height: '24px' }} />
         <span>Quay lại danh sách</span>
       </button>
+
       <h4>Lịch sử khách hàng ngày {formatDateDisplay(selectedDate)}</h4>
 
       <input
@@ -70,6 +76,7 @@ function CustomerHistory() {
         onChange={(e) => setSelectedDate(e.target.value)}
         style={{ marginBottom: '10px' }}
       />
+
       <table className="table table-bordered">
         <thead>
           <tr>
