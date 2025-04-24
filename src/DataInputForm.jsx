@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from "./Button.jsx";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
+import Fuse from 'fuse.js';
 
 // ✅ Thêm hàm xác định thiết bị di động:
 function isMobileDevice() {
@@ -35,10 +36,27 @@ function DataInputForm() {
   const [customerType, setCustomerType] = useState('Khách đi');
   const debounceTimeout = useRef(null);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const suggestionRefs = useRef([]);
+  const [historyNoiDi, setHistoryNoiDi] = useState([]);
 
+  const [highlightedIndexNoiDi, setHighlightedIndexNoiDi] = useState(-1); // ✅ Thêm state cho chỉ số gợi ý nơi đi
+  const suggestionRefsNoiDi = useRef([]);
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
+
+  //Bổ sung nơi đi lấy từ customerhistory
+  useEffect(() => {
+    axios.get(`${API_URL}/identity/CustomerHistory/allnoidi`)
+      .then(res => {
+        const allNoiDi = [...new Set(res.data.map(item => item.trim()).filter(Boolean))];
+        console.log("Dữ liệu gợi ý nơi đi:", allNoiDi);
+        setHistoryNoiDi(allNoiDi);
+      })
+      .catch(err => {
+        console.error("Lỗi khi lấy toàn bộ nơi đi:", err);
+      });
+  }, [API_URL]);
 
   const goiyNoiDi = useMemo(() => [
     "Miền Đông",
@@ -75,6 +93,15 @@ function DataInputForm() {
     "Mắt Sài Gòn",
     "Cổng chào BD",
   ], []);
+
+  function normalizeVietnamese(str) {
+    return str
+      .normalize("NFD")                  // Tách dấu khỏi ký tự
+      .replace(/[\u0300-\u036f]/g, '')  // Xóa dấu
+      .replace(/đ/g, 'd')               // Chuyển đ → d
+      .replace(/Đ/g, 'D')
+      .toLowerCase();                   // Viết thường hóa
+  }
 
   useEffect(() => {
     if (formData.noiDon.length < 1 || formData.noiDon === lastNoiDon) {
@@ -152,6 +179,10 @@ function DataInputForm() {
               ghiChu: last.ghichu
             }));
           }
+
+          // ✅ Trích lịch sử nơi đi
+          const uniqueNoiDi = [...new Set(res.data.map(item => item.noidi))];
+          setHistoryNoiDi(prev => [...new Set([...prev, ...uniqueNoiDi.filter(Boolean)])]);
         })
         .catch(err => console.error("Lỗi khi lấy lịch sử khách:", err));
     }
@@ -181,12 +212,36 @@ function DataInputForm() {
 
     if (name === 'noiDi') {
       if (value.length >= 1) {
-        const matches = goiyNoiDi.filter(suggestion => 
-          suggestion.toLowerCase().includes(value.toLowerCase())
-        );
-        setSuggestionsNoiDi(matches);
-        setShowSuggestionsNoiDi(matches.length > 0);
+        const input = value;
+        const normalizedInput = normalizeVietnamese(input);
+        const inputTokens = normalizedInput.split(/\s+/);
+    
+        const allChoices = [...new Set([...historyNoiDi, ...goiyNoiDi])];
+    
+        // 1. So khớp từng token
+        const prefixMatches = allChoices.filter(choice => {
+          const normalizedChoice = normalizeVietnamese(choice);
+          const choiceTokens = normalizedChoice.split(/\s+/);
+          return inputTokens.every(token =>
+            choiceTokens.some(ct => ct.startsWith(token))
+          );
+        });
+    
+        // 2. Fuzzy search (fallback nếu không có prefix match hoặc muốn bổ sung)
+        const fuse = new Fuse(allChoices, {
+          threshold: 0.2,
+          ignoreLocation: true,
+          keys: [], // vì là array string, không phải object
+        });
+    
+        const fuzzyResults = fuse.search(input).map(r => r.item);
+    
+        // 3. Gộp kết quả, ưu tiên prefix match lên đầu
+        const finalSuggestions = [...new Set([...prefixMatches, ...fuzzyResults])];
+        setSuggestionsNoiDi(finalSuggestions);
+        setShowSuggestionsNoiDi(finalSuggestions.length > 0);
       } else {
+        // ✅ Đây là phần else tương ứng với if (value.length >= 1)
         setSuggestionsNoiDi([]);
         setShowSuggestionsNoiDi(false);
       }
@@ -412,14 +467,27 @@ function DataInputForm() {
               }
             } else if (e.key === 'ArrowDown') {
               e.preventDefault(); // tránh di chuyển con trỏ xuống dưới
-              setHighlightedIndex(prev => Math.min(prev + 1, suggestions.length - 1));
-            }
-            else if (e.key === 'ArrowUp') {
+              setHighlightedIndex(prev => {
+                const nextIndex = Math.min(prev + 1, suggestions.length - 1);
+                // 👇 Scroll dòng tiếp theo vào view
+                if (suggestionRefs.current[nextIndex]) {
+                  suggestionRefs.current[nextIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+                return nextIndex;
+              });
+      
+            } else if (e.key === 'ArrowUp') {
               e.preventDefault(); // tránh di chuyển con trỏ lên trên
-              setHighlightedIndex(prev => Math.max(prev - 1, 0));
+              setHighlightedIndex(prev => {
+                const nextIndex = Math.max(prev - 1, 0);
+                // 👇 Scroll dòng trước vào view
+                if (suggestionRefs.current[nextIndex]) {
+                  suggestionRefs.current[nextIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+                return nextIndex;
+            });
             }
           }}
-
         />
         {showSuggestions && suggestions.length > 0 && (
           <ul style={{
@@ -430,14 +498,22 @@ function DataInputForm() {
               zIndex: '1000',
               backgroundColor: 'white',
               listStyleType: 'none',
-              width: '100%'
+              width: '100%',
+
+              //Bổ sung để ô gợi ý gọn gàng hơn
+              maxHeight: '180px',
+              overflowY: 'auto',
+              fontSize: '14px',
+              lineHeight: '1.4',
             }}>
             {suggestions.map((suggestion, index) => (
               <li 
                 key={index} 
+                ref={el => (suggestionRefs.current[index] = el)} // ✅ Gán ref  
                 onClick={() => handleSuggestionClick(suggestion.noidon)} 
                 style={{ 
-                  padding: '8px', 
+                  //padding: '8px', 
+                  padding: '6px 10px',      // ✅ Ít padding hơn
                   cursor: 'pointer',
                   backgroundColor: index === highlightedIndex ? '#87CEFA' : 'white' // Đổi màu nền khi hover
                 }}>
@@ -467,25 +543,66 @@ function DataInputForm() {
           onChange={handleChange}
           onMouseEnter={handleMouseEnter}
           onFocus={handleFocusOther}
+          autoComplete="off"
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              e.preventDefault(); // tránh reload trang
-              handleSubmit();
+              e.preventDefault();
+              if (highlightedIndexNoiDi >= 0 && suggestionsNoiDi[highlightedIndexNoiDi]) {
+                const selected = suggestionsNoiDi[highlightedIndexNoiDi];
+                setFormData(prev => ({ ...prev, noiDi: selected }));
+                setSuggestionsNoiDi([]);
+                setShowSuggestionsNoiDi(false);
+                setHighlightedIndexNoiDi(-1);
+              } else {
+                handleSubmit();
+              }
+            } else if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              setHighlightedIndexNoiDi(prev => {
+                const nextIndex = Math.min(prev + 1, suggestionsNoiDi.length - 1);
+                if (suggestionRefsNoiDi.current[nextIndex]) {
+                  suggestionRefsNoiDi.current[nextIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+                return nextIndex;
+              });
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              setHighlightedIndexNoiDi(prev => {
+                const nextIndex = Math.max(prev - 1, 0);
+                if (suggestionRefsNoiDi.current[nextIndex]) {
+                  suggestionRefsNoiDi.current[nextIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+                return nextIndex;
+              });
             }
           }}
         />
         {showSuggestionsNoiDi && suggestionsNoiDi.length > 0 && (
           <ul style={{
-              border: '1px solid #ccc',
-              padding: '0',
-              margin: '0',
-              position: 'absolute',
-              zIndex: '1000',
-              backgroundColor: 'white',
-              listStyleType: 'none'
-            }}>
+            border: '1px solid #ccc',
+            padding: '0',
+            margin: '0',
+            position: 'absolute',
+            zIndex: '1000',
+            backgroundColor: 'white',
+            listStyleType: 'none',
+            width: '100%',
+            maxHeight: '180px',
+            overflowY: 'auto',
+            fontSize: '14px',
+            lineHeight: '1.4',
+          }}>
             {suggestionsNoiDi.map((suggestion, index) => (
-              <li key={index} onClick={() => handleSuggestionClickNoiDi(suggestion)} style={{ padding: '8px', cursor: 'pointer' }}>
+              <li
+                key={index}
+                ref={el => (suggestionRefsNoiDi.current[index] = el)}
+                onClick={() => handleSuggestionClickNoiDi(suggestion)}
+                style={{
+                  padding: '6px 10px',
+                  cursor: 'pointer',
+                  backgroundColor: index === highlightedIndexNoiDi ? '#87CEFA' : 'white'
+                }}
+              >
                 {suggestion}
               </li>
             ))}
